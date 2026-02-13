@@ -4,7 +4,7 @@ import { Person } from '../types';
 interface UserManagementProps {
     users: Person[];
     onAddUser: (user: Person) => void;
-    onDeleteUser: (userId: string) => void;
+    onDeleteUser: (id: string) => void;
 }
 
 const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser, onDeleteUser }) => {
@@ -13,21 +13,55 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser, onDel
         full_name: '',
         email: '',
         role: 'Auditor',
-        password: '' // Only for UI mimicking, won't actually set auth password directly in this MVP
+        password: ''
     });
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const newUser: Person = {
-            id: `u${Math.random().toString(36).substr(2, 9)}`,
-            full_name: formData.full_name,
-            email: formData.email,
-            role: formData.role,
-            avatar_url: `https://picsum.photos/seed/${formData.full_name}/100`
-        };
-        onAddUser(newUser);
-        setIsModalOpen(false);
-        setFormData({ full_name: '', email: '', role: 'Auditor', password: '' });
+
+        if (!formData.password || formData.password.length < 6) {
+            alert("La contraseña debe tener al menos 6 caracteres.");
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const response = await fetch('/api/create-user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Error al crear usuario');
+            }
+
+            alert('Usuario creado correctamente. Ya puede iniciar sesión.');
+
+            if (data.user) {
+                const newUser: Person = {
+                    id: data.user.id,
+                    full_name: formData.full_name,
+                    email: formData.email,
+                    role: formData.role,
+                    avatar_url: `https://picsum.photos/seed/${formData.full_name}/100`
+                };
+                onAddUser(newUser);
+            }
+
+            setIsModalOpen(false);
+            setFormData({ full_name: '', email: '', role: 'Auditor', password: '' });
+
+        } catch (error: any) {
+            console.error('Error creating user:', error);
+            alert(`Error: ${error.message}`);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -106,17 +140,28 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser, onDel
                                     <option value="Senior Staff">Senior Staff</option>
                                     <option value="Lead Auditor">Lead Auditor</option>
                                     <option value="Audit Manager">Audit Manager</option>
+                                    <option value="Admin">Admin</option>
                                 </select>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Contraseña Provisional</label>
-                                <input type="text" placeholder="Generada automáticamente..." disabled className="w-full px-4 py-3 bg-slate-100 border border-slate-200 text-slate-400 rounded-xl text-sm font-medium outline-none cursor-not-allowed" />
-                                <p className="text-[10px] text-slate-400">* El usuario recibirá un correo para configurar su acceso.</p>
+                                <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Contraseña</label>
+                                <input
+                                    required
+                                    type="text"
+                                    value={formData.password}
+                                    onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                    placeholder="Mínimo 6 caracteres"
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
+                                />
+                                <p className="text-[10px] text-slate-400">* Esta será la contraseña de acceso.</p>
                             </div>
 
                             <div className="pt-4 flex gap-3">
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3 text-slate-600 font-bold hover:bg-slate-50 rounded-xl">Cancelar</button>
-                                <button type="submit" className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/20">Crear Usuario</button>
+                                <button disabled={loading} type="submit" className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/20 flex justify-center items-center gap-2">
+                                    {loading ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : null}
+                                    {loading ? 'Creando...' : 'Crear Usuario'}
+                                </button>
                             </div>
                         </form>
                     </div>
