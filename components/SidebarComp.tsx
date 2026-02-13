@@ -31,8 +31,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange, isCollapsed
     <button
       onClick={() => onViewChange(item.id as ViewType)}
       className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300 group relative ${activeView === item.id
-          ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-          : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+        ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+        : 'text-slate-400 hover:bg-slate-800 hover:text-white'
         } ${isCollapsed ? 'justify-center' : ''}`}
       title={isCollapsed ? item.label : ''}
     >
@@ -126,36 +126,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange, isCollapsed
         </div>
       </nav>
 
-      {/* Footer / Profile Section */}
+      {/* Footer / Profile Section - Cleared as per request */}
       <div className={`p-4 mt-auto bg-black/20 border-t border-white/5 transition-all duration-500 ${isCollapsed ? 'flex justify-center' : ''}`}>
-        <div className="flex flex-col gap-3 w-full">
-          {!isCollapsed && (
-            <button
-              onClick={seedDatabase}
-              className="w-full py-2 bg-pink-600 hover:bg-pink-700 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg flex items-center justify-center gap-2 mb-2 transition-colors"
-            >
-              <span className="material-icons-outlined text-sm">database</span>
-              Sembrar DB
-            </button>
-          )}
-
-          <div className="flex items-center gap-3">
-            <div className="relative shrink-0 group cursor-pointer">
-              <img
-                src="https://picsum.photos/seed/manager/100"
-                className={`w-10 h-10 border-2 border-white/10 shadow-xl transition-all duration-500 object-cover ${isCollapsed ? 'rounded-lg' : 'rounded-full group-hover:scale-105'}`}
-                alt="Manager"
-              />
-              <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-[#0a192f] rounded-full"></div>
-            </div>
-            {!isCollapsed && (
-              <div className="min-w-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                <p className="text-xs font-black truncate text-slate-100">J. Wilson</p>
-                <p className="text-[9px] text-blue-400 font-bold uppercase tracking-wider truncate">Senior Auditor</p>
-              </div>
-            )}
-          </div>
-        </div>
+        {/* Placeholder for future Login/User info */}
       </div>
     </aside>
   );
