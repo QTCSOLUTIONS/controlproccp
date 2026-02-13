@@ -15,9 +15,12 @@ import NewEntityModal from './components/NewEntityModal';
 import EditEntityModal from './components/EditEntityModal';
 import NewPersonModal from './components/NewPersonModal';
 import EditPersonModal from './components/EditPersonModal';
+import LoginComp from './components/LoginComp';
 import { api } from './src/api';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 
-const App: React.FC = () => {
+const ControlProApp: React.FC = () => {
+  const { session, loading: authLoading } = useAuth();
   const [activeView, setActiveView] = useState<ViewType>('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
@@ -38,6 +41,8 @@ const App: React.FC = () => {
 
   // Fetch initial data
   useEffect(() => {
+    if (!session) return; // Don't fetch if not logged in
+
     const fetchData = async () => {
       setLoading(true);
       try {
@@ -52,7 +57,6 @@ const App: React.FC = () => {
 
         setPeople(peopleData || []);
         setEntities(auditsData || []);
-        // setAreas(areasData || INITIAL_AREAS); // API returns strings
         if (areasData && areasData.length > 0) setAreas(areasData);
         setPlannerData(plannerData || []);
         setRisks(risksData || []);
@@ -65,7 +69,7 @@ const App: React.FC = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [session]);
 
   const entityNames = useMemo(() => entities.map(e => e.name), [entities]);
 
@@ -211,8 +215,27 @@ const App: React.FC = () => {
     }
   };
 
+  // Auth Protection Logic
+  if (authLoading) {
+    return <div className="flex h-screen items-center justify-center bg-[#0a192f] text-white">
+      <div className="flex flex-col items-center gap-4">
+        <span className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+        <p className="text-xs font-bold uppercase tracking-widest text-blue-400">Verificando sesión...</p>
+      </div>
+    </div>;
+  }
+
+  if (!session) {
+    return <LoginComp />;
+  }
+
   if (loading) {
-    return <div className="flex h-screen items-center justify-center">Cargando datos de ControlPro...</div>;
+    return <div className="flex h-screen items-center justify-center bg-[#0a192f] text-white">
+      <div className="flex flex-col items-center gap-4">
+        <span className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+        <p className="text-xs font-bold uppercase tracking-widest text-blue-400">Cargando Sistema...</p>
+      </div>
+    </div>;
   }
 
   return (
@@ -329,6 +352,14 @@ const App: React.FC = () => {
         />
       )}
     </div>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <ControlProApp />
+    </AuthProvider>
   );
 };
 
