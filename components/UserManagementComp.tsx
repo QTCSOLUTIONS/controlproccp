@@ -3,17 +3,18 @@ import { Person } from '../types';
 
 interface UserManagementProps {
     users: Person[];
-    onAddUser: (user: Person) => void;
+    onUserUpdated: () => void;
     onDeleteUser: (id: string) => void;
 }
 
-const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser, onDeleteUser }) => {
+const UserManagement: React.FC<UserManagementProps> = ({ users, onUserUpdated, onDeleteUser }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
         full_name: '',
         email: '',
         role: 'Auditor',
-        password: ''
+        password: '',
+        visible_in_team: true
     });
     const [loading, setLoading] = useState(false);
 
@@ -42,19 +43,10 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser, onDel
 
             alert('Usuario creado correctamente. Ya puede iniciar sesión.');
 
-            if (data.user) {
-                const newUser: Person = {
-                    id: data.user.id,
-                    full_name: formData.full_name,
-                    email: formData.email,
-                    role: formData.role,
-                    avatar_url: `https://picsum.photos/seed/${formData.full_name}/100`
-                };
-                onAddUser(newUser);
-            }
+            onUserUpdated();
 
             setIsModalOpen(false);
-            setFormData({ full_name: '', email: '', role: 'Auditor', password: '' });
+            setFormData({ full_name: '', email: '', role: 'Auditor', password: '', visible_in_team: true });
 
         } catch (error: any) {
             console.error('Error creating user:', error);
@@ -95,6 +87,11 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser, onDel
                         </div>
 
                         <div className="flex items-center gap-6">
+                            <div className="flex flex-col items-center" title={user.visible_in_team !== false ? "Visible en Equipo" : "Oculto en Equipo"}>
+                                <span className={`material-icons-outlined text-sm ${user.visible_in_team !== false ? 'text-emerald-500' : 'text-slate-300'}`}>
+                                    {user.visible_in_team !== false ? 'visibility' : 'visibility_off'}
+                                </span>
+                            </div>
                             <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${user.role === 'Admin' || user.role === 'Audit Manager' ? 'bg-purple-100 text-purple-600' : 'bg-blue-50 text-blue-600'
                                 }`}>
                                 {user.role}
@@ -154,6 +151,19 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser, onDel
                                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
                                 />
                                 <p className="text-[10px] text-slate-400">* Esta será la contraseña de acceso.</p>
+                            </div>
+
+                            <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                <input
+                                    type="checkbox"
+                                    id="visible_in_team"
+                                    checked={formData.visible_in_team}
+                                    onChange={e => setFormData({ ...formData, visible_in_team: e.target.checked })}
+                                    className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300 accent-blue-600"
+                                />
+                                <label htmlFor="visible_in_team" className="text-sm font-bold text-slate-600 cursor-pointer select-none">
+                                    Mostrar en selectores de equipo
+                                </label>
                             </div>
 
                             <div className="pt-4 flex gap-3">
