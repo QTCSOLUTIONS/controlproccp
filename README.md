@@ -1,4 +1,4 @@
-# CONTROLPRO - Audit Systems
+# CONTROLPRO - Audit Systems.
 
 Sistema de Control Interno y Auditoría con integración de IA.
 
