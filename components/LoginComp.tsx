@@ -52,7 +52,7 @@ const LoginComp: React.FC = () => {
                     )}
 
                     <div className="space-y-2">
-                        <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 pl-1">Correo Corporativo</label>
+                        <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 pl-1">Mail</label>
                         <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 material-icons-outlined text-lg">email</span>
                             <input
@@ -60,7 +60,7 @@ const LoginComp: React.FC = () => {
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                placeholder="usuario@qtc-solutions.com"
+                                placeholder="mail"
                                 className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm font-medium text-slate-700"
                             />
                         </div>
@@ -98,6 +98,8 @@ const LoginComp: React.FC = () => {
 
                     <p className="text-center text-[10px] text-slate-400 font-medium pt-4">
                         Sistema restringido para personal autorizado de QTC Solutions.
+                        <br />
+                        Copyright QTC-SOLUTIONS 2026
                     </p>
                 </form>
             </div>

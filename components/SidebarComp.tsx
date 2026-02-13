@@ -133,14 +133,32 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange, isCollapsed
       </nav>
 
       {/* Footer / Profile Section - Cleared as per request */}
+      {/* Footer / Profile Section */}
       <div className={`p-4 mt-auto bg-black/20 border-t border-white/5 transition-all duration-500 ${isCollapsed ? 'flex justify-center' : ''}`}>
-        <button
-          onClick={() => signOut()}
-          className="w-full py-2 bg-slate-800 hover:bg-red-900/50 text-slate-400 hover:text-red-400 text-[10px] font-bold uppercase tracking-widest rounded-lg flex items-center justify-center gap-2 transition-colors"
-        >
-          <span className="material-icons-outlined text-sm">logout</span>
-          {!isCollapsed && "Cerrar Sesión"}
-        </button>
+        <div className="flex flex-col gap-3 w-full">
+          <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
+            <div className="relative shrink-0 group cursor-pointer">
+              <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs border-2 border-white/10">
+                {user?.email?.charAt(0).toUpperCase()}
+              </div>
+              <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 bg-emerald-500 border-2 border-[#0a192f] rounded-full"></div>
+            </div>
+            {!isCollapsed && (
+              <div className="min-w-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <p className="text-[10px] font-bold truncate text-slate-100">{user?.email}</p>
+                <p className="text-[8px] text-blue-400 font-bold uppercase tracking-wider truncate">Conectado</p>
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={() => signOut()}
+            className="w-full py-2 bg-slate-800 hover:bg-red-900/50 text-slate-400 hover:text-red-400 text-[10px] font-bold uppercase tracking-widest rounded-lg flex items-center justify-center gap-2 transition-colors"
+          >
+            <span className="material-icons-outlined text-sm">logout</span>
+            {!isCollapsed && "Cerrar Sesión"}
+          </button>
+        </div>
       </div>
     </aside>
   );
