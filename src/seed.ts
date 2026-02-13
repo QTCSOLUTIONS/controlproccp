@@ -77,8 +77,8 @@ export const seedDatabase = async () => {
         console.log("Database seeding completed!");
         alert("Database seeding completed successfully!");
 
-    } catch (e) {
+    } catch (e: any) {
         console.error("Seeding failed:", e);
-        alert("Seeding failed. Check console for details.");
+        alert(`Seeding failed: ${e.message || JSON.stringify(e)}`);
     }
 };
