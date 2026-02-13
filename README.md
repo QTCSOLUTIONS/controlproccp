@@ -20,7 +20,7 @@ Sistema de Control Interno y Auditoría con integración de IA.
 
 ## Estructura del Proyecto (Actualizada)
 - `/src`: Lógica principal, API y cliente Supabase.
-- `/components`: Componentes UI (Renombrados a `*Comp.tsx` para compatibilidad Vercel).
+- `/components`: Componentes UI (Renombrados a `*Comp.tsx` para compatibilidad Vercel)
 - `App.tsx`: Punto de entrada principal.
 
 ## Despliegue en Vercel
