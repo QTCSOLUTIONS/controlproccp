@@ -80,4 +80,4 @@ export interface TaskPlannerEntry {
   phase: string;
 }
 
-export type ViewType = 'dashboard' | 'schedule' | 'matrix' | 'entidades' | 'personas' | 'planner' | 'cla' | 'areas';
+export type ViewType = 'dashboard' | 'schedule' | 'matrix' | 'entidades' | 'personas' | 'planner' | 'cla' | 'areas' | 'users';
