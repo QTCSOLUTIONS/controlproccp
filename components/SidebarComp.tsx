@@ -1,6 +1,6 @@
 import React from 'react';
 import { ViewType } from '../types';
-import { seedDatabase } from '../src/seed';
+import { useAuth } from '../contexts/AuthContext';
 
 interface SidebarProps {
   activeView: ViewType;
@@ -10,6 +10,9 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange, isCollapsed, onToggle }) => {
+  const { user, signOut } = useAuth();
+  const isAdmin = user?.email === 'ccp@qtc-solutions.com';
+
   const mainItems = [
     { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
     { id: 'schedule', label: 'Calendario', icon: 'calendar_month' },
@@ -122,13 +125,22 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange, isCollapsed
           <SectionTitle>Ajustes</SectionTitle>
           <div className="space-y-1.5">
             {configItems.map((item) => <NavButton key={item.id} item={item} />)}
+            {isAdmin && (
+              <NavButton item={{ id: 'users', label: 'Gestión Usuarios', icon: 'admin_panel_settings' }} />
+            )}
           </div>
         </div>
       </nav>
 
       {/* Footer / Profile Section - Cleared as per request */}
       <div className={`p-4 mt-auto bg-black/20 border-t border-white/5 transition-all duration-500 ${isCollapsed ? 'flex justify-center' : ''}`}>
-        {/* Placeholder for future Login/User info */}
+        <button
+          onClick={() => signOut()}
+          className="w-full py-2 bg-slate-800 hover:bg-red-900/50 text-slate-400 hover:text-red-400 text-[10px] font-bold uppercase tracking-widest rounded-lg flex items-center justify-center gap-2 transition-colors"
+        >
+          <span className="material-icons-outlined text-sm">logout</span>
+          {!isCollapsed && "Cerrar Sesión"}
+        </button>
       </div>
     </aside>
   );

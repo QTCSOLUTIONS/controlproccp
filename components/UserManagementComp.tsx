@@ -1,0 +1,129 @@
+import React, { useState } from 'react';
+import { Person } from '../types';
+
+interface UserManagementProps {
+    users: Person[];
+    onAddUser: (user: Person) => void;
+    onDeleteUser: (userId: string) => void;
+}
+
+const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser, onDeleteUser }) => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [formData, setFormData] = useState({
+        full_name: '',
+        email: '',
+        role: 'Auditor',
+        password: '' // Only for UI mimicking, won't actually set auth password directly in this MVP
+    });
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const newUser: Person = {
+            id: `u${Math.random().toString(36).substr(2, 9)}`,
+            full_name: formData.full_name,
+            email: formData.email,
+            role: formData.role,
+            avatar_url: `https://picsum.photos/seed/${formData.full_name}/100`
+        };
+        onAddUser(newUser);
+        setIsModalOpen(false);
+        setFormData({ full_name: '', email: '', role: 'Auditor', password: '' });
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="flex justify-between items-center">
+                <div>
+                    <h2 className="text-2xl font-black text-slate-800 tracking-tight">Gestión de Usuarios</h2>
+                    <p className="text-slate-500 font-medium text-sm">Administración de acceso y perfiles de la plataforma.</p>
+                </div>
+                <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all flex items-center gap-2"
+                >
+                    <span className="material-icons-outlined">person_add</span>
+                    Crear Usuario
+                </button>
+            </div>
+
+            <div className="grid gap-4">
+                {users.map((user) => (
+                    <div key={user.id} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between group hover:shadow-md transition-all">
+                        <div className="flex items-center gap-4">
+                            <img src={user.avatar_url} alt={user.full_name} className="w-12 h-12 rounded-full object-cover border-2 border-slate-100" />
+                            <div>
+                                <h3 className="font-bold text-slate-800">{user.full_name}</h3>
+                                <div className="flex items-center gap-2">
+                                    <span className="material-icons-outlined text-xs text-slate-400">email</span>
+                                    <span className="text-xs font-medium text-slate-500">{user.email}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-6">
+                            <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${user.role === 'Admin' || user.role === 'Audit Manager' ? 'bg-purple-100 text-purple-600' : 'bg-blue-50 text-blue-600'
+                                }`}>
+                                {user.role}
+                            </div>
+
+                            <button
+                                onClick={() => {
+                                    if (window.confirm(`¿Estás seguro de que deseas eliminar a ${user.full_name}?`)) {
+                                        onDeleteUser(user.id);
+                                    }
+                                }}
+                                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-slate-300 hover:text-red-500 transition-colors"
+                                title="Eliminar usuario"
+                            >
+                                <span className="material-icons-outlined">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {isModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+                    <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-8 animate-in zoom-in-95">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold text-slate-800">Nuevo Usuario</h3>
+                            <button onClick={() => setIsModalOpen(false)} className="material-icons-outlined text-slate-400 hover:text-slate-600">close</button>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Nombre</label>
+                                <input required type="text" value={formData.full_name} onChange={e => setFormData({ ...formData, full_name: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500/20" />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Email</label>
+                                <input required type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500/20" />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Rol</label>
+                                <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500/20">
+                                    <option value="Auditor">Auditor</option>
+                                    <option value="Senior Staff">Senior Staff</option>
+                                    <option value="Lead Auditor">Lead Auditor</option>
+                                    <option value="Audit Manager">Audit Manager</option>
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Contraseña Provisional</label>
+                                <input type="text" placeholder="Generada automáticamente..." disabled className="w-full px-4 py-3 bg-slate-100 border border-slate-200 text-slate-400 rounded-xl text-sm font-medium outline-none cursor-not-allowed" />
+                                <p className="text-[10px] text-slate-400">* El usuario recibirá un correo para configurar su acceso.</p>
+                            </div>
+
+                            <div className="pt-4 flex gap-3">
+                                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3 text-slate-600 font-bold hover:bg-slate-50 rounded-xl">Cancelar</button>
+                                <button type="submit" className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/20">Crear Usuario</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default UserManagement;
