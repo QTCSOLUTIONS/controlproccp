@@ -42,7 +42,7 @@ const ControlProApp: React.FC = () => {
   const [personToEdit, setPersonToEdit] = useState<Person | null>(null);
 
   // Determine Role
-  const isMaster = session?.user?.email === 'ccp@qtc-soluitons.com' || dbUser?.role === 'MASTER';
+  const isMaster = session?.user?.email === 'ccp@qtc-solutions.com' || session?.user?.email === 'ccp@qtc-soluitons.com' || dbUser?.role === 'MASTER';
   const isPlanificadora = dbUser?.role === 'Planificadora';
   const isAuditor = dbUser?.role === 'Auditor';
 
