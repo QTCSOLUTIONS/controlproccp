@@ -2,6 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { TaskPlannerEntry } from '../types';
 import { SCOPE_OPTIONS, PHASE_OPTIONS } from '../constants';
+import { api } from '../src/api';
 
 interface TaskPlannerProps {
   data: TaskPlannerEntry[];
@@ -12,29 +13,50 @@ const TaskPlanner: React.FC<TaskPlannerProps> = ({ data, onUpdate }) => {
   const [localData, setLocalData] = useState<TaskPlannerEntry[]>(data);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(null);
 
-  const handleCellChange = (id: string, field: keyof TaskPlannerEntry, value: string) => {
+  const handleCellChange = async (id: string, field: keyof TaskPlannerEntry, value: string) => {
+    // Optimistic update
     const updated = localData.map(item => item.id === id ? { ...item, [field]: value } : item);
     setLocalData(updated);
     onUpdate(updated);
+
+    try {
+      await api.updatePlannerEntry(id, { [field]: value });
+    } catch (error) {
+      console.error("Error updating planner entry:", error);
+      // Optionally revert state here if needed
+    }
   };
 
-  const addRow = () => {
-    const newRow: TaskPlannerEntry = {
-      id: `tp-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
-      scope: '', // Iniciamos en blanco
-      task: '',  // Iniciamos en blanco
-      phase: ''  // Iniciamos en blanco
-    };
-    // Añadimos al final de la lista actual
-    const updated = [...localData, newRow];
-    setLocalData(updated);
-    onUpdate(updated);
+  const addRow = async () => {
+    try {
+      const newEntry = {
+        scope: '',
+        task: '',
+        phase: ''
+      };
+
+      // Create in DB first to get real ID
+      const created = await api.createPlannerEntry(newEntry);
+
+      const updated = [...localData, created];
+      setLocalData(updated);
+      onUpdate(updated);
+    } catch (error) {
+      console.error("Error creating planner entry:", error);
+      alert("Error al crear la entrada. Intente nuevamente.");
+    }
   };
 
-  const removeRow = (id: string) => {
-    const updated = localData.filter(item => item.id !== id);
-    setLocalData(updated);
-    onUpdate(updated);
+  const removeRow = async (id: string) => {
+    try {
+      await api.deletePlannerEntry(id);
+      const updated = localData.filter(item => item.id !== id);
+      setLocalData(updated);
+      onUpdate(updated);
+    } catch (error) {
+      console.error("Error deleting planner entry:", error);
+      alert("Error al eliminar la entrada.");
+    }
   };
 
   const toggleSort = () => {
@@ -51,7 +73,7 @@ const TaskPlanner: React.FC<TaskPlannerProps> = ({ data, onUpdate }) => {
     return [...localData].sort((a, b) => {
       const valA = a.phase.toLowerCase();
       const valB = b.phase.toLowerCase();
-      
+
       if (valA === '' && valB !== '') return 1;
       if (valA !== '' && valB === '') return -1;
 
@@ -70,7 +92,7 @@ const TaskPlanner: React.FC<TaskPlannerProps> = ({ data, onUpdate }) => {
           <h3 className="text-lg font-bold text-slate-800">Planificador de Tareas</h3>
           <p className="text-xs text-slate-400 font-medium uppercase tracking-widest mt-1">Vinculación de Alcance, Tareas y Fases</p>
         </div>
-        <button 
+        <button
           onClick={addRow}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20"
         >
@@ -85,7 +107,7 @@ const TaskPlanner: React.FC<TaskPlannerProps> = ({ data, onUpdate }) => {
             <tr className="bg-slate-100/50">
               <th className="p-4 text-[10px] font-extrabold uppercase tracking-widest text-slate-500 border-b border-slate-200 w-1/4">Alcance de Auditoría</th>
               <th className="p-4 text-[10px] font-extrabold uppercase tracking-widest text-slate-500 border-b border-slate-200 w-2/4">Tareas</th>
-              <th 
+              <th
                 className="p-4 text-[10px] font-extrabold uppercase tracking-widest text-slate-500 border-b border-slate-200 w-1/4 cursor-pointer hover:bg-slate-200/50 transition-colors group/sort"
                 onClick={toggleSort}
               >
@@ -139,7 +161,7 @@ const TaskPlanner: React.FC<TaskPlannerProps> = ({ data, onUpdate }) => {
                   </select>
                 </td>
                 <td className="p-4 text-center">
-                  <button 
+                  <button
                     onClick={() => removeRow(item.id)}
                     className="text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
                     title="Eliminar línea"
@@ -159,15 +181,15 @@ const TaskPlanner: React.FC<TaskPlannerProps> = ({ data, onUpdate }) => {
           </tbody>
         </table>
       </div>
-      
+
       <div className="p-4 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center">
-         <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-            <span className="material-icons-outlined text-xs">info</span>
-            <span>Las nuevas líneas se añaden en blanco para ser completadas. Ordenable por Fase.</span>
-         </div>
-         <div className="text-[10px] font-bold text-slate-300">
-            AUDITPRO TASK PLANNER V1.3
-         </div>
+        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+          <span className="material-icons-outlined text-xs">info</span>
+          <span>Las nuevas líneas se añaden en blanco para ser completadas. Ordenable por Fase.</span>
+        </div>
+        <div className="text-[10px] font-bold text-slate-300">
+          AUDITPRO TASK PLANNER V1.3
+        </div>
       </div>
     </div>
   );

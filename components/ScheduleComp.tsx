@@ -14,7 +14,26 @@ const ENTITY_COLUMN_WIDTH = 288; // w-72 en Tailwind es 288px
 
 const Schedule: React.FC<ScheduleProps> = ({ entities, onUpdatePhaseStatus, onUpdatePhase, onEditEntity }) => {
   // Referencia global del proyecto
-  const BASE_DATE = new Date(2026, 1, 16); // 16 de Febrero de 2026
+  // Referencia global del proyecto: Usamos la fecha de inicio más temprana o la actual
+  const BASE_DATE = useMemo(() => {
+    const validDates = entities
+      .map(e => new Date(e.start_date).getTime())
+      .filter(t => !isNaN(t));
+
+    if (validDates.length === 0) {
+      const now = new Date();
+      // Lunes de la semana actual
+      const day = now.getDay();
+      const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+      return new Date(now.setDate(diff));
+    }
+
+    const minDate = new Date(Math.min(...validDates));
+    // Ajustar al lunes de esa semana
+    const day = minDate.getDay();
+    const diff = minDate.getDate() - day + (day === 0 ? -6 : 1);
+    return new Date(minDate.setDate(diff));
+  }, [entities]);
   const [selectedPhaseInfo, setSelectedPhaseInfo] = useState<{ entityId: string, phase: Phase } | null>(null);
   const [alert, setAlert] = useState<{ show: boolean, message: string } | null>(null);
 
@@ -37,7 +56,7 @@ const Schedule: React.FC<ScheduleProps> = ({ entities, onUpdatePhaseStatus, onUp
       date.setDate(date.getDate() + 7);
     }
     return generatedWeeks;
-  }, []);
+  }, [BASE_DATE]);
 
   const totalWidth = weeks.length * COLUMN_WIDTH;
 
@@ -107,7 +126,9 @@ const Schedule: React.FC<ScheduleProps> = ({ entities, onUpdatePhaseStatus, onUp
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 bg-white px-3 py-1 rounded-lg border border-slate-200 shadow-sm">
               <span className="text-[10px] font-extrabold uppercase text-slate-400">Referencia Global:</span>
-              <span className="text-xs font-bold text-slate-700">16 Feb 2026</span>
+              <span className="text-xs font-bold text-slate-700">
+                {BASE_DATE.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+              </span>
             </div>
             <p className="text-[10px] text-slate-400 font-bold uppercase hidden md:block">Las fases se posicionan según la fecha de inicio de cada entidad</p>
           </div>
@@ -191,8 +212,8 @@ const Schedule: React.FC<ScheduleProps> = ({ entities, onUpdatePhaseStatus, onUp
                                 key={phase.id}
                                 onClick={() => setSelectedPhaseInfo({ entityId: entity.id, phase })}
                                 className={`absolute h-14 rounded-xl px-3 flex flex-col justify-center overflow-hidden shadow-sm border-l-4 group/bar transition-all hover:scale-[1.01] hover:brightness-95 active:scale-[0.98] pointer-events-auto z-10 ${phase.status === 'Completed' ? 'bg-emerald-50 border-emerald-500 text-emerald-700' :
-                                    phase.status === 'Execution' ? 'bg-blue-50 border-blue-500 text-blue-700' :
-                                      'bg-slate-50 border-slate-300 text-slate-500'
+                                  phase.status === 'Execution' ? 'bg-blue-50 border-blue-500 text-blue-700' :
+                                    'bg-slate-50 border-slate-300 text-slate-500'
                                   }`}
                                 style={layout}
                                 title={phase.alert_note}
@@ -209,7 +230,7 @@ const Schedule: React.FC<ScheduleProps> = ({ entities, onUpdatePhaseStatus, onUp
                                   <div className="flex items-center justify-between">
                                     <span className="text-[7px] opacity-70 font-bold whitespace-nowrap">{phase.duration_weeks} {phase.duration_weeks === 1 ? 'Semana' : 'Semanas'}</span>
                                     <span className={`text-[7px] font-extrabold px-1 rounded ml-2 ${phase.status === 'Completed' ? 'bg-emerald-100' :
-                                        phase.status === 'Execution' ? 'bg-blue-100' : 'bg-slate-200'
+                                      phase.status === 'Execution' ? 'bg-blue-100' : 'bg-slate-200'
                                       }`}>
                                       {getStatusLabel(phase.status)}
                                     </span>

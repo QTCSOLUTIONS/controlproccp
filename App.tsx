@@ -19,9 +19,10 @@ import LoginComp from './components/LoginComp';
 import UserManagement from './components/UserManagementComp';
 import { api } from './src/api';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { Toaster, toast } from 'sonner';
 
 const ControlProApp: React.FC = () => {
-  const { session, loading: authLoading } = useAuth();
+  const { session, loading: authLoading, dbUser } = useAuth();
   const [activeView, setActiveView] = useState<ViewType>('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
@@ -39,6 +40,11 @@ const ControlProApp: React.FC = () => {
   const [entityToEdit, setEntityToEdit] = useState<AuditEntity | null>(null);
   const [isPersonModalOpen, setIsPersonModalOpen] = useState(false);
   const [personToEdit, setPersonToEdit] = useState<Person | null>(null);
+
+  // Determine Role
+  const isMaster = session?.user?.email === 'ccp@qtc-soluitons.com' || dbUser?.role === 'MASTER';
+  const isPlanificadora = dbUser?.role === 'Planificadora';
+  const isAuditor = dbUser?.role === 'Auditor';
 
   // Fetch initial data
   useEffect(() => {
@@ -74,22 +80,55 @@ const ControlProApp: React.FC = () => {
 
   const entityNames = useMemo(() => entities.map(e => e.name), [entities]);
 
+  // Filter Entities based on Role AND Search
   const filteredEntities = useMemo(() => {
-    return entities.filter(e => searchTerm === '' || e.name === searchTerm);
-  }, [entities, searchTerm]);
+    let result = entities;
 
+    // RBAC Filtering
+    if (isAuditor && dbUser) {
+      result = result.filter(e => e.responsible_id === dbUser.id);
+    }
+    // Planificadora and Master see all
+
+    // Search Filtering
+    return result.filter(e => searchTerm === '' || e.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  }, [entities, searchTerm, isAuditor, dbUser]);
+
+  // Filter Risks based on Visible Entities AND Search
   const filteredRisks = useMemo(() => {
-    return risks.filter(r => searchTerm === '' || r.entity_name === searchTerm);
-  }, [risks, searchTerm]);
+    // Only show risks for visible entities
+    const visibleEntityIds = new Set(filteredEntities.map(e => e.id));
 
+    return risks.filter(r => {
+      const matchesEntity = visibleEntityIds.has(r.audit_id);
+      const matchesSearch = searchTerm === '' ||
+        (r.entity_name && r.entity_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (r.risk_description && r.risk_description.toLowerCase().includes(searchTerm.toLowerCase()));
+
+      return matchesEntity && matchesSearch;
+    });
+  }, [risks, filteredEntities, searchTerm]);
+
+  // Filter CLA Criteria based on Visible Entities AND Search
   const filteredClaCriteria = useMemo(() => {
-    return claCriteria.filter(c => searchTerm === '' || c.entity_name === searchTerm);
-  }, [claCriteria, searchTerm]);
+    // Only show criteria for visible entities
+    const visibleEntityIds = new Set(filteredEntities.map(e => e.id));
+
+    return claCriteria.filter(c => {
+      const matchesEntity = visibleEntityIds.has(c.audit_id);
+      const matchesSearch = searchTerm === '' ||
+        (c.entity_name && c.entity_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (c.criterion && c.criterion.toLowerCase().includes(searchTerm.toLowerCase()));
+
+      return matchesEntity && matchesSearch;
+    });
+  }, [claCriteria, filteredEntities, searchTerm]);
 
   const filteredPeople = useMemo(() => {
     if (searchTerm === '') return people;
-    const assignedId = entities.find(e => e.name === searchTerm)?.responsible_id;
-    return people.filter(p => p.id === assignedId);
+    // Search people by name or if they are responsible for the searched entity
+    const assignedId = entities.find(e => e.name.toLowerCase() === searchTerm.toLowerCase())?.responsible_id;
+    return people.filter(p => p.full_name.toLowerCase().includes(searchTerm.toLowerCase()) || p.id === assignedId);
   }, [people, entities, searchTerm]);
 
   const handleAddEntity = async (newEntity: Partial<AuditEntity>) => {
@@ -101,9 +140,10 @@ const ControlProApp: React.FC = () => {
       const created = await api.createAudit(entityData);
       setEntities([...entities, created]);
       setIsEntityModalOpen(false);
+      toast.success('Auditoría creada correctamente');
     } catch (e: any) {
       console.error("Error creating audit", e);
-      alert(`Error creating audit: ${e.message}`);
+      toast.error(`Error creating audit: ${e.message}`);
     }
   };
 
@@ -112,9 +152,10 @@ const ControlProApp: React.FC = () => {
       const updated = await api.updateAudit(updatedEntity.id, updatedEntity);
       setEntities(entities.map(e => e.id === updated.id ? { ...e, ...updated } : e));
       setEntityToEdit(null);
+      toast.success('Auditoría actualizada correctamente');
     } catch (e: any) {
       console.error("Error updating audit", e);
-      alert(`Error al actualizar auditoría: ${e.message}`);
+      toast.error(`Error al actualizar auditoría: ${e.message}`);
     }
   };
 
@@ -132,33 +173,22 @@ const ControlProApp: React.FC = () => {
       const created = await api.createPerson(personData);
       setPeople([...people, created]);
       setIsPersonModalOpen(false);
-      alert('Persona creada correctamente');
+      toast.success('Persona creada correctamente');
     } catch (e: any) {
       console.error("Error creating person", e);
-      alert(`Error al crear persona: ${e.message}`);
+      toast.error(`Error al crear persona: ${e.message}`);
     }
   };
-
-  //...
-
-  {
-    activeView === 'users' && (
-      <UserManagement
-        users={people}
-        onUserUpdated={refreshPeople}
-        onDeleteUser={handleDeletePerson}
-      />
-    )
-  }
 
   const handleUpdatePerson = async (updatedPerson: Person) => {
     try {
       const updated = await api.updatePerson(updatedPerson.id, updatedPerson);
       setPeople(people.map(p => p.id === updated.id ? updated : p));
       setPersonToEdit(null);
+      toast.success('Persona actualizada correctamente');
     } catch (e: any) {
       console.error("Error updating person", e);
-      alert(`Error al actualizar persona: ${e.message}`);
+      toast.error(`Error al actualizar persona: ${e.message}`);
     }
   };
 
@@ -166,10 +196,10 @@ const ControlProApp: React.FC = () => {
     try {
       await api.deletePerson(id);
       setPeople(people.filter(p => p.id !== id));
-      alert('Usuario eliminado correctamente');
+      toast.success('Usuario eliminado correctamente');
     } catch (e: any) {
       console.error("Error deleting person", e);
-      alert(`Error al eliminar usuario: ${e.message}`);
+      toast.error(`Error al eliminar usuario: ${e.message}`);
     }
   };
 
@@ -178,9 +208,10 @@ const ControlProApp: React.FC = () => {
       try {
         await api.createArea(newArea);
         setAreas([...areas, newArea]);
+        toast.success('Área creada correctamente');
       } catch (e: any) {
         console.error("Error creating area", e);
-        alert(`Error al crear área: ${e.message}`);
+        toast.error(`Error al crear área: ${e.message}`);
       }
     }
   };
@@ -267,8 +298,20 @@ const ControlProApp: React.FC = () => {
     </div>;
   }
 
+  // View Access Control
+  // If activeView is 'users' but not master, redirect to dashboard
+  if (activeView === 'users' && !isMaster) {
+    setActiveView('dashboard');
+  }
+  // If activeView is 'areas' but not master/planificadora, redirect to dashboard
+  if (activeView === 'areas' && !(isMaster || isPlanificadora)) {
+    setActiveView('dashboard');
+  }
+
+
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden">
+      <Toaster richColors position="top-right" />
       <Sidebar
         activeView={activeView}
         onViewChange={setActiveView}
@@ -282,7 +325,11 @@ const ControlProApp: React.FC = () => {
           onSearchChange={setSearchTerm}
           viewTitle={getTitle(activeView)}
           onNewAudit={() => setIsEntityModalOpen(true)}
-          showCreateButton={activeView !== 'dashboard' && activeView !== 'personas' && activeView !== 'planner' && activeView !== 'matrix' && activeView !== 'cla' && activeView !== 'areas' && activeView !== 'users'}
+          showCreateButton={
+            (activeView === 'entidades' && (isMaster || isPlanificadora)) || // Only Master/Planificadora can add entities
+            (activeView === 'personas' && (isMaster || isPlanificadora)) || // Only Master/Planificadora can add people
+            (activeView !== 'dashboard' && activeView !== 'personas' && activeView !== 'planner' && activeView !== 'matrix' && activeView !== 'cla' && activeView !== 'areas' && activeView !== 'users')
+          }
           showNotifications={
             activeView !== 'dashboard' &&
             activeView !== 'personas' &&
@@ -296,19 +343,19 @@ const ControlProApp: React.FC = () => {
         />
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-          {activeView === 'dashboard' && <Dashboard entities={filteredEntities} />}
+          {activeView === 'dashboard' && <Dashboard entities={filteredEntities} risks={filteredRisks} />}
           {activeView === 'schedule' && (
             <Schedule
               entities={filteredEntities}
               onUpdatePhaseStatus={handleUpdatePhaseStatus}
               onUpdatePhase={handleUpdatePhase}
-              onEditEntity={setEntityToEdit}
+              onEditEntity={isMaster || isPlanificadora ? setEntityToEdit : undefined} // Auditors cannot edit entities directly here
             />
           )}
           {activeView === 'planner' && <TaskPlanner data={plannerData} onUpdate={setPlannerData} />}
           {activeView === 'matrix' && (
             <RiskMatrix
-              entities={entities}
+              entities={entities.filter(e => filteredEntities.some(fe => fe.id === e.id))} // Ensure dropdowns only show allowed entities
               risks={filteredRisks}
               onUpdate={setRisks}
               areas={areas}
@@ -316,12 +363,13 @@ const ControlProApp: React.FC = () => {
               plannerData={plannerData}
               filterEntityName={searchTerm !== '' ? searchTerm : null}
               onClearFilter={() => setSearchTerm('')}
+              people={people}
             />
           )}
           {activeView === 'cla' && (
             <CLACriteria
               criteria={filteredClaCriteria}
-              entities={entities}
+              entities={entities.filter(e => filteredEntities.some(fe => fe.id === e.id))}
               areas={areas}
               onAddArea={handleAddArea}
               onUpdate={setClaCriteria}
@@ -329,25 +377,25 @@ const ControlProApp: React.FC = () => {
               onClearFilter={() => setSearchTerm('')}
             />
           )}
-          {activeView === 'areas' && <AreasConfig areas={areas} onUpdateAreas={setAreas} />}
+          {activeView === 'areas' && (isMaster || isPlanificadora) && <AreasConfig areas={areas} onUpdateAreas={setAreas} />}
           {activeView === 'entidades' && (
             <EntityList
               entities={filteredEntities}
-              onAddClick={() => setIsEntityModalOpen(true)}
+              onAddClick={isMaster || isPlanificadora ? () => setIsEntityModalOpen(true) : undefined}
               people={people}
               onViewDetails={handleViewEntityDetails}
-              onEditClick={(entity) => setEntityToEdit(entity)}
+              onEditClick={(entity) => (isMaster || isPlanificadora) ? setEntityToEdit(entity) : null}
             />
           )}
           {activeView === 'personas' && (
             <PeopleList
               people={filteredPeople}
               entities={entities}
-              onAddPersonClick={() => setIsPersonModalOpen(true)}
-              onEditPerson={setPersonToEdit}
+              onAddPersonClick={isMaster ? () => setIsPersonModalOpen(true) : undefined}
+              onEditPerson={isMaster ? setPersonToEdit : undefined}
             />
           )}
-          {activeView === 'users' && (
+          {activeView === 'users' && isMaster && (
             <UserManagement
               users={people}
               onUserUpdated={refreshPeople}

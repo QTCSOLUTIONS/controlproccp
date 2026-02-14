@@ -10,8 +10,12 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange, isCollapsed, onToggle }) => {
-  const { user, signOut } = useAuth();
-  const isAdmin = user?.email === 'ccp@qtc-solutions.com';
+  const { user, signOut, dbUser } = useAuth();
+
+  // Role checks
+  const isAdmin = user?.email === 'ccp@qtc-solutions.com' || user?.email === 'ccp@qtc-soluitons.com' || dbUser?.role === 'MASTER';
+  const isAuditor = dbUser?.role === 'Auditor';
+  // Planificadora acts as admin-lite for these views, so simple else/check is fine, or explicit isPlanificadora
 
   const mainItems = [
     { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
@@ -24,6 +28,15 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange, isCollapsed
     { id: 'areas', label: 'Áreas', icon: 'category' },
     { id: 'planner', label: 'Planificador', icon: 'task_alt' },
   ];
+
+  // Filter items based on role
+  const visibleConfigItems = configItems.filter(item => {
+    if (isAuditor) {
+      // Auditor only sees 'entidades' from this list
+      return item.id === 'entidades';
+    }
+    return true; // Master and Planificadora see all
+  });
 
   const workItems = [
     { id: 'matrix', label: 'Matriz R-C', icon: 'grid_view' },
@@ -125,7 +138,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange, isCollapsed
         <div>
           <SectionTitle>Ajustes</SectionTitle>
           <div className="space-y-1.5">
-            {configItems.map((item) => <NavButton key={item.id} item={item} />)}
+            {visibleConfigItems.map((item) => <NavButton key={item.id} item={item} />)}
             {isAdmin && (
               <NavButton item={{ id: 'users', label: 'Gestión Usuarios', icon: 'admin_panel_settings' }} />
             )}

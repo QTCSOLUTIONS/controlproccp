@@ -1,14 +1,15 @@
 import React, { useState, useMemo } from 'react';
-import { AuditEntity } from '../types';
+import { AuditEntity, RiskControl } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { GoogleGenAI } from "@google/genai";
 import ExecutiveReportModal from './ExecutiveReportModal';
 
 interface DashboardProps {
   entities: AuditEntity[];
+  risks: RiskControl[];
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ entities }) => {
+const Dashboard: React.FC<DashboardProps> = ({ entities, risks }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [aiSummary, setAiSummary] = useState('');
   const [isLoadingReport, setIsLoadingReport] = useState(false);
@@ -17,7 +18,7 @@ const Dashboard: React.FC<DashboardProps> = ({ entities }) => {
     { label: 'Total Entidades', value: entities.length, icon: 'business', color: 'bg-blue-500' },
     { label: 'En Progreso', value: entities.filter(e => e.status === 'Execution').length, icon: 'pending_actions', color: 'bg-amber-500' },
     { label: 'Completadas', value: entities.filter(e => e.status === 'Completed').length, icon: 'check_circle', color: 'bg-emerald-500' },
-    { label: 'Riesgos Críticos', value: 8, icon: 'warning', color: 'bg-red-500' },
+    { label: 'Riesgos Críticos', value: risks.filter(r => r.traffic_light_level === 'Alto' || r.traffic_light_level === 'Crítico').length, icon: 'warning', color: 'bg-red-500' },
   ];
 
   const planningAlerts = useMemo(() => {
@@ -226,7 +227,7 @@ const Dashboard: React.FC<DashboardProps> = ({ entities }) => {
                       <p className="text-[9px] text-slate-400 font-bold uppercase mt-0.5">Inicio: {formatDate(e.start_date)} | {e.total} tareas</p>
                     </div>
                     <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest ${e.progressPerc === 100 ? 'bg-emerald-100 text-emerald-700' :
-                        e.progressPerc > 0 ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
+                      e.progressPerc > 0 ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
                       }`}>
                       {e.progressPerc === 100 ? 'Finalizada' : 'Activa'}
                     </span>

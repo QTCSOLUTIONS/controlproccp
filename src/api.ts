@@ -138,5 +138,23 @@ export const api = {
         const { data, error } = await supabase.from('planner_entries').select('*');
         if (error) throw error;
         return data as TaskPlannerEntry[];
+    },
+
+    createPlannerEntry: async (entry: Omit<TaskPlannerEntry, 'id'>) => {
+        const { data, error } = await supabase.from('planner_entries').insert(entry).select().single();
+        if (error) throw error;
+        return data as TaskPlannerEntry;
+    },
+
+    updatePlannerEntry: async (id: string, updates: Partial<TaskPlannerEntry>) => {
+        const { data, error } = await supabase.from('planner_entries').update(updates).eq('id', id).select().single();
+        if (error) throw error;
+        return data as TaskPlannerEntry;
+    },
+
+    deletePlannerEntry: async (id: string) => {
+        const { error } = await supabase.from('planner_entries').delete().eq('id', id);
+        if (error) throw error;
+        return true;
     }
 };
