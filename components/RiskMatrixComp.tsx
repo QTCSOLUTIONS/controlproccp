@@ -171,247 +171,246 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[2800px]">
           <thead>
-            <thead>
-              <tr className="bg-[#1a5f7a] text-white shadow-lg sticky top-0 z-30">
-                <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[220px] sticky left-0 z-40 bg-[#1a5f7a] shadow-[4px_0_10px_-2px_rgba(0,0,0,0.1)]">Entidad</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[250px] sticky left-[220px] z-40 bg-[#1a5f7a] shadow-[4px_0_10px_-2px_rgba(0,0,0,0.1)]">Alcance de Auditoría</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[350px]">Tareas</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap">Proceso</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[180px]">Área</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap">Riesgo Identificado</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[180px]">Impacto</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[180px]">Probabilidad</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap text-center">Riesgo Inherente (I x P)</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap">Controles existentes</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[180px]">Efectividad (1-5)</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap text-center">Riesgo Residual (RI / EF)</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap text-center">Clasificación / Semáforo</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[160px]">Estado</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap">Responsable</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap">Implementación</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wide whitespace-nowrap">Recomendación</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wide w-12 text-center"></th>
+            <tr className="bg-[#1a5f7a] text-white shadow-lg sticky top-0 z-30">
+              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[220px] sticky left-0 z-40 bg-[#1a5f7a] shadow-[4px_0_10px_-2px_rgba(0,0,0,0.1)]">Entidad</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[250px] sticky left-[220px] z-40 bg-[#1a5f7a] shadow-[4px_0_10px_-2px_rgba(0,0,0,0.1)]">Alcance de Auditoría</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[350px]">Tareas</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap">Proceso</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[180px]">Área</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap">Riesgo Identificado</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[180px]">Impacto</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[180px]">Probabilidad</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap text-center">Riesgo Inherente (I x P)</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap">Controles existentes</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[180px]">Efectividad (1-5)</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap text-center">Riesgo Residual (RI / EF)</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap text-center">Clasificación / Semáforo</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[160px]">Estado</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap">Responsable</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap">Implementación</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wide whitespace-nowrap">Recomendación</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wide w-12 text-center"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {filteredRisks.map((risk) => (
+              <tr key={risk.id} className="group hover:bg-slate-50 transition-colors">
+                <td className="p-0 border-r border-slate-100 sticky left-0 z-20 bg-white group-hover:bg-slate-50 transition-colors shadow-[4px_0_10px_-2px_rgba(0,0,0,0.05)]">
+                  <select
+                    className="w-full h-full p-4 text-sm font-semibold text-slate-800 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
+                    value={risk.entity_name}
+                    onChange={(e) => handleCellChange(risk.id, 'entity_name', e.target.value)}
+                  >
+                    <option value="" disabled>Seleccionar entidad...</option>
+                    {entities.map(entity => (
+                      <option key={entity.id} value={entity.name}>
+                        {entity.name}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+
+                <td className="p-0 border-r border-slate-100 sticky left-[220px] z-20 bg-white group-hover:bg-slate-50 transition-colors shadow-[4px_0_10px_-2px_rgba(0,0,0,0.05)]">
+                  <select
+                    className={`w-full h-full p-4 text-sm bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer ${!risk.audit_scope ? 'text-slate-400 italic' : 'text-slate-700 font-medium'}`}
+                    value={risk.audit_scope}
+                    onChange={(e) => handleCellChange(risk.id, 'audit_scope', e.target.value)}
+                  >
+                    <option value="" disabled>Seleccionar alcance...</option>
+                    {SCOPE_OPTIONS.map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                </td>
+
+                <td className="p-0 border-r border-slate-100">
+                  <select
+                    className={`w-full h-full p-4 text-sm bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer ${!risk.tasks ? 'text-slate-400 italic' : 'text-slate-700 italic font-medium'}`}
+                    value={risk.tasks}
+                    onChange={(e) => handleCellChange(risk.id, 'tasks', e.target.value)}
+                  >
+                    <option value="" disabled>Seleccionar tarea...</option>
+                    {Array.from(new Set(getTasksForScope(risk.audit_scope || ''))).map(task => (
+                      <option key={task} value={task}>{task}</option>
+                    ))}
+                  </select>
+                </td>
+
+                <td className="p-0 border-r border-slate-100">
+                  <input
+                    type="text"
+                    className="w-full h-full p-4 text-sm font-bold text-blue-800 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none placeholder:text-slate-300"
+                    placeholder="Proceso..."
+                    value={risk.process}
+                    onChange={(e) => handleCellChange(risk.id, 'process', e.target.value)}
+                  />
+                </td>
+                <td className="p-0 border-r border-slate-100">
+                  <select
+                    className="w-full h-full p-4 text-sm text-slate-600 font-medium bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
+                    value={risk.area}
+                    onChange={(e) => handleAreaChange(risk.id, e.target.value)}
+                  >
+                    <option value="" disabled>Seleccionar área...</option>
+                    {areas.map(area => (
+                      <option key={area} value={area}>{area}</option>
+                    ))}
+                    <option value="__add__" className="text-blue-600 font-bold">+ Añadir nueva área...</option>
+                  </select>
+                </td>
+                <td className="p-0 border-r border-slate-100 min-w-[300px]">
+                  <textarea
+                    rows={2}
+                    className="w-full h-full p-4 text-sm text-slate-700 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none resize-none leading-tight placeholder:text-slate-300"
+                    placeholder="Descripción del riesgo..."
+                    value={risk.risk_description}
+                    onChange={(e) => handleCellChange(risk.id, 'risk_description', e.target.value)}
+                  />
+                </td>
+
+                <td className="p-0 border-r border-slate-100 bg-slate-50/20">
+                  <select
+                    className="w-full h-full p-4 text-xs font-bold text-slate-700 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
+                    value={risk.impact}
+                    onChange={(e) => handleCellChange(risk.id, 'impact', parseInt(e.target.value))}
+                  >
+                    {IMPACT_LEVELS.map(level => (
+                      <option key={level.value} value={level.value}>
+                        {level.value} - {level.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="px-4 pb-2 -mt-2 text-[9px] text-slate-400 italic leading-none truncate max-w-[170px]">
+                    {IMPACT_LEVELS.find(l => l.value === risk.impact)?.description}
+                  </div>
+                </td>
+
+                <td className="p-0 border-r border-slate-100 bg-slate-50/20">
+                  <select
+                    className="w-full h-full p-4 text-xs font-bold text-slate-700 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
+                    value={risk.probability}
+                    onChange={(e) => handleCellChange(risk.id, 'probability', parseInt(e.target.value))}
+                  >
+                    {PROBABILITY_LEVELS.map(level => (
+                      <option key={level.value} value={level.value}>
+                        {level.value} - {level.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="px-4 pb-2 -mt-2 text-[9px] text-slate-400 italic leading-none truncate max-w-[170px]">
+                    {PROBABILITY_LEVELS.find(l => l.value === risk.probability)?.description}
+                  </div>
+                </td>
+
+                <td className="p-4 text-sm text-center font-extrabold text-blue-900 bg-blue-50/40 border-r border-slate-100">
+                  {risk.inherent_risk}
+                </td>
+
+                <td className="p-4 text-sm text-slate-600 border-r border-slate-100">
+                  <textarea
+                    rows={1}
+                    className="w-full h-full p-0 text-sm bg-transparent border-none focus:ring-0 outline-none resize-none"
+                    value={risk.existing_controls}
+                    onChange={(e) => handleCellChange(risk.id, 'existing_controls', e.target.value)}
+                  />
+                </td>
+
+                <td className="p-0 border-r border-slate-100 bg-slate-50/20">
+                  <select
+                    className="w-full h-full p-4 text-xs font-bold text-slate-700 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
+                    value={risk.control_effectiveness}
+                    onChange={(e) => handleCellChange(risk.id, 'control_effectiveness', parseInt(e.target.value) || 1)}
+                  >
+                    {EFFECTIVENESS_LEVELS.map(level => (
+                      <option key={level.value} value={level.value}>
+                        {level.value} - {level.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="px-4 pb-2 -mt-2 text-[9px] text-slate-400 italic leading-none truncate max-w-[170px]">
+                    {EFFECTIVENESS_LEVELS.find(l => l.value === risk.control_effectiveness)?.description}
+                  </div>
+                </td>
+
+                <td className="p-4 text-sm text-center font-extrabold text-indigo-900 bg-indigo-50/30 border-r border-slate-100">
+                  {risk.residual_risk}
+                </td>
+
+                <td className="p-4 text-center border-r border-slate-100">
+                  <div className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest inline-block min-w-[100px] ${getTrafficLightColor(risk.traffic_light_level)}`}>
+                    {risk.traffic_light_level}
+                  </div>
+                  <div className="text-[9px] text-slate-400 mt-1 font-bold">
+                    ({risk.inherent_risk})
+                  </div>
+                </td>
+
+                <td className="p-0 border-r border-slate-100 bg-slate-50/30">
+                  <div className="flex items-center h-full px-2">
+                    <select
+                      className={`w-full py-2 px-3 text-[10px] font-bold uppercase tracking-wider rounded-lg border focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer shadow-sm transition-all ${getStatusColor(risk.status)}`}
+                      value={risk.status}
+                      onChange={(e) => handleCellChange(risk.id, 'status', e.target.value)}
+                    >
+                      {STATUS_OPTIONS.map(opt => (
+                        <option key={opt} value={opt} className="bg-white text-slate-800 normal-case font-medium">{opt}</option>
+                      ))}
+                    </select>
+                  </div>
+                </td>
+
+                <td className="p-0 border-r border-slate-100">
+                  <select
+                    className="w-full h-full p-4 text-sm text-slate-800 font-medium bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
+                    value={risk.responsible}
+                    onChange={(e) => handleCellChange(risk.id, 'responsible', e.target.value)}
+                  >
+                    <option value="" disabled>Asignar responsable...</option>
+                    {people.map(person => (
+                      <option key={person.id} value={person.full_name}>{person.full_name}</option>
+                    ))}
+                    {/* Permitir valores antiguos que no estén en la lista por compatibilidad */}
+                    {risk.responsible && !people.some(p => p.full_name === risk.responsible) && (
+                      <option value={risk.responsible}>{risk.responsible}</option>
+                    )}
+                  </select>
+                </td>
+                <td className="p-0 border-r border-slate-100">
+                  <input
+                    type="date"
+                    className="w-full h-full p-4 text-[10px] text-slate-500 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none font-mono"
+                    value={risk.implementation_date}
+                    onChange={(e) => handleCellChange(risk.id, 'implementation_date', e.target.value)}
+                  />
+                </td>
+                <td className="p-0">
+                  <textarea
+                    rows={1}
+                    className="w-full h-full p-4 text-sm text-slate-600 italic leading-tight bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none resize-none placeholder:text-slate-300"
+                    placeholder="Recomendación..."
+                    value={risk.recommendation}
+                    onChange={(e) => handleCellChange(risk.id, 'recommendation', e.target.value)}
+                  />
+                </td>
+
+                <td className="p-4 text-center">
+                  <button
+                    onClick={() => removeRow(risk.id)}
+                    className="text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                  >
+                    <span className="material-icons-outlined text-sm">delete</span>
+                  </button>
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredRisks.map((risk) => (
-                <tr key={risk.id} className="group hover:bg-slate-50 transition-colors">
-                  <td className="p-0 border-r border-slate-100 sticky left-0 z-20 bg-white group-hover:bg-slate-50 transition-colors shadow-[4px_0_10px_-2px_rgba(0,0,0,0.05)]">
-                    <select
-                      className="w-full h-full p-4 text-sm font-semibold text-slate-800 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
-                      value={risk.entity_name}
-                      onChange={(e) => handleCellChange(risk.id, 'entity_name', e.target.value)}
-                    >
-                      <option value="" disabled>Seleccionar entidad...</option>
-                      {entities.map(entity => (
-                        <option key={entity.id} value={entity.name}>
-                          {entity.name}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-
-                  <td className="p-0 border-r border-slate-100 sticky left-[220px] z-20 bg-white group-hover:bg-slate-50 transition-colors shadow-[4px_0_10px_-2px_rgba(0,0,0,0.05)]">
-                    <select
-                      className={`w-full h-full p-4 text-sm bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer ${!risk.audit_scope ? 'text-slate-400 italic' : 'text-slate-700 font-medium'}`}
-                      value={risk.audit_scope}
-                      onChange={(e) => handleCellChange(risk.id, 'audit_scope', e.target.value)}
-                    >
-                      <option value="" disabled>Seleccionar alcance...</option>
-                      {SCOPE_OPTIONS.map(opt => (
-                        <option key={opt} value={opt}>{opt}</option>
-                      ))}
-                    </select>
-                  </td>
-
-                  <td className="p-0 border-r border-slate-100">
-                    <select
-                      className={`w-full h-full p-4 text-sm bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer ${!risk.tasks ? 'text-slate-400 italic' : 'text-slate-700 italic font-medium'}`}
-                      value={risk.tasks}
-                      onChange={(e) => handleCellChange(risk.id, 'tasks', e.target.value)}
-                    >
-                      <option value="" disabled>Seleccionar tarea...</option>
-                      {Array.from(new Set(getTasksForScope(risk.audit_scope || ''))).map(task => (
-                        <option key={task} value={task}>{task}</option>
-                      ))}
-                    </select>
-                  </td>
-
-                  <td className="p-0 border-r border-slate-100">
-                    <input
-                      type="text"
-                      className="w-full h-full p-4 text-sm font-bold text-blue-800 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none placeholder:text-slate-300"
-                      placeholder="Proceso..."
-                      value={risk.process}
-                      onChange={(e) => handleCellChange(risk.id, 'process', e.target.value)}
-                    />
-                  </td>
-                  <td className="p-0 border-r border-slate-100">
-                    <select
-                      className="w-full h-full p-4 text-sm text-slate-600 font-medium bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
-                      value={risk.area}
-                      onChange={(e) => handleAreaChange(risk.id, e.target.value)}
-                    >
-                      <option value="" disabled>Seleccionar área...</option>
-                      {areas.map(area => (
-                        <option key={area} value={area}>{area}</option>
-                      ))}
-                      <option value="__add__" className="text-blue-600 font-bold">+ Añadir nueva área...</option>
-                    </select>
-                  </td>
-                  <td className="p-0 border-r border-slate-100 min-w-[300px]">
-                    <textarea
-                      rows={2}
-                      className="w-full h-full p-4 text-sm text-slate-700 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none resize-none leading-tight placeholder:text-slate-300"
-                      placeholder="Descripción del riesgo..."
-                      value={risk.risk_description}
-                      onChange={(e) => handleCellChange(risk.id, 'risk_description', e.target.value)}
-                    />
-                  </td>
-
-                  <td className="p-0 border-r border-slate-100 bg-slate-50/20">
-                    <select
-                      className="w-full h-full p-4 text-xs font-bold text-slate-700 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
-                      value={risk.impact}
-                      onChange={(e) => handleCellChange(risk.id, 'impact', parseInt(e.target.value))}
-                    >
-                      {IMPACT_LEVELS.map(level => (
-                        <option key={level.value} value={level.value}>
-                          {level.value} - {level.label}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="px-4 pb-2 -mt-2 text-[9px] text-slate-400 italic leading-none truncate max-w-[170px]">
-                      {IMPACT_LEVELS.find(l => l.value === risk.impact)?.description}
-                    </div>
-                  </td>
-
-                  <td className="p-0 border-r border-slate-100 bg-slate-50/20">
-                    <select
-                      className="w-full h-full p-4 text-xs font-bold text-slate-700 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
-                      value={risk.probability}
-                      onChange={(e) => handleCellChange(risk.id, 'probability', parseInt(e.target.value))}
-                    >
-                      {PROBABILITY_LEVELS.map(level => (
-                        <option key={level.value} value={level.value}>
-                          {level.value} - {level.label}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="px-4 pb-2 -mt-2 text-[9px] text-slate-400 italic leading-none truncate max-w-[170px]">
-                      {PROBABILITY_LEVELS.find(l => l.value === risk.probability)?.description}
-                    </div>
-                  </td>
-
-                  <td className="p-4 text-sm text-center font-extrabold text-blue-900 bg-blue-50/40 border-r border-slate-100">
-                    {risk.inherent_risk}
-                  </td>
-
-                  <td className="p-4 text-sm text-slate-600 border-r border-slate-100">
-                    <textarea
-                      rows={1}
-                      className="w-full h-full p-0 text-sm bg-transparent border-none focus:ring-0 outline-none resize-none"
-                      value={risk.existing_controls}
-                      onChange={(e) => handleCellChange(risk.id, 'existing_controls', e.target.value)}
-                    />
-                  </td>
-
-                  <td className="p-0 border-r border-slate-100 bg-slate-50/20">
-                    <select
-                      className="w-full h-full p-4 text-xs font-bold text-slate-700 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
-                      value={risk.control_effectiveness}
-                      onChange={(e) => handleCellChange(risk.id, 'control_effectiveness', parseInt(e.target.value) || 1)}
-                    >
-                      {EFFECTIVENESS_LEVELS.map(level => (
-                        <option key={level.value} value={level.value}>
-                          {level.value} - {level.label}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="px-4 pb-2 -mt-2 text-[9px] text-slate-400 italic leading-none truncate max-w-[170px]">
-                      {EFFECTIVENESS_LEVELS.find(l => l.value === risk.control_effectiveness)?.description}
-                    </div>
-                  </td>
-
-                  <td className="p-4 text-sm text-center font-extrabold text-indigo-900 bg-indigo-50/30 border-r border-slate-100">
-                    {risk.residual_risk}
-                  </td>
-
-                  <td className="p-4 text-center border-r border-slate-100">
-                    <div className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest inline-block min-w-[100px] ${getTrafficLightColor(risk.traffic_light_level)}`}>
-                      {risk.traffic_light_level}
-                    </div>
-                    <div className="text-[9px] text-slate-400 mt-1 font-bold">
-                      ({risk.inherent_risk})
-                    </div>
-                  </td>
-
-                  <td className="p-0 border-r border-slate-100 bg-slate-50/30">
-                    <div className="flex items-center h-full px-2">
-                      <select
-                        className={`w-full py-2 px-3 text-[10px] font-bold uppercase tracking-wider rounded-lg border focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer shadow-sm transition-all ${getStatusColor(risk.status)}`}
-                        value={risk.status}
-                        onChange={(e) => handleCellChange(risk.id, 'status', e.target.value)}
-                      >
-                        {STATUS_OPTIONS.map(opt => (
-                          <option key={opt} value={opt} className="bg-white text-slate-800 normal-case font-medium">{opt}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </td>
-
-                  <td className="p-0 border-r border-slate-100">
-                    <select
-                      className="w-full h-full p-4 text-sm text-slate-800 font-medium bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
-                      value={risk.responsible}
-                      onChange={(e) => handleCellChange(risk.id, 'responsible', e.target.value)}
-                    >
-                      <option value="" disabled>Asignar responsable...</option>
-                      {people.map(person => (
-                        <option key={person.id} value={person.full_name}>{person.full_name}</option>
-                      ))}
-                      {/* Permitir valores antiguos que no estén en la lista por compatibilidad */}
-                      {risk.responsible && !people.some(p => p.full_name === risk.responsible) && (
-                        <option value={risk.responsible}>{risk.responsible}</option>
-                      )}
-                    </select>
-                  </td>
-                  <td className="p-0 border-r border-slate-100">
-                    <input
-                      type="date"
-                      className="w-full h-full p-4 text-[10px] text-slate-500 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none font-mono"
-                      value={risk.implementation_date}
-                      onChange={(e) => handleCellChange(risk.id, 'implementation_date', e.target.value)}
-                    />
-                  </td>
-                  <td className="p-0">
-                    <textarea
-                      rows={1}
-                      className="w-full h-full p-4 text-sm text-slate-600 italic leading-tight bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none resize-none placeholder:text-slate-300"
-                      placeholder="Recomendación..."
-                      value={risk.recommendation}
-                      onChange={(e) => handleCellChange(risk.id, 'recommendation', e.target.value)}
-                    />
-                  </td>
-
-                  <td className="p-4 text-center">
-                    <button
-                      onClick={() => removeRow(risk.id)}
-                      className="text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                    >
-                      <span className="material-icons-outlined text-sm">delete</span>
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {filteredRisks.length === 0 && (
-                <tr>
-                  <td colSpan={18} className="p-20 text-center text-slate-400 italic">
-                    No se han encontrado registros para esta entidad en la matriz de riesgos.
-                  </td>
-                </tr>
-              )}
-            </tbody>
+            ))}
+            {filteredRisks.length === 0 && (
+              <tr>
+                <td colSpan={18} className="p-20 text-center text-slate-400 italic">
+                  No se han encontrado registros para esta entidad en la matriz de riesgos.
+                </td>
+              </tr>
+            )}
+          </tbody>
         </table>
       </div>
 
