@@ -105,6 +105,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onUserUpdated, o
                                 }}
                                 className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-slate-300 hover:text-red-500 transition-colors"
                                 title="Eliminar usuario"
+                                aria-label="Eliminar usuario"
                             >
                                 <span className="material-icons-outlined">delete</span>
                             </button>
@@ -118,7 +119,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onUserUpdated, o
                     <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-8 animate-in zoom-in-95">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-slate-800">Nuevo Usuario</h3>
-                            <button onClick={() => setIsModalOpen(false)} className="material-icons-outlined text-slate-400 hover:text-slate-600">close</button>
+                            <button onClick={() => setIsModalOpen(false)} className="material-icons-outlined text-slate-400 hover:text-slate-600" aria-label="Cerrar modal">close</button>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-5">

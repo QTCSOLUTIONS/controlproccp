@@ -37,7 +37,7 @@ const EditEntityModal: React.FC<EditEntityModalProps> = ({ entity, onClose, onSa
             <h3 className="text-xl font-bold text-slate-800">Editar Entidad Auditada</h3>
             <p className="text-xs text-slate-400 font-medium">Actualice la configuración y cronograma de {entity.name}</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full text-slate-400 transition-colors">
+          <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full text-slate-400 transition-colors" aria-label="Cerrar modal">
             <span className="material-icons-outlined">close</span>
           </button>
         </div>
@@ -73,7 +73,7 @@ const EditEntityModal: React.FC<EditEntityModalProps> = ({ entity, onClose, onSa
                 value={formData.responsible_id}
                 onChange={e => setFormData({ ...formData, responsible_id: e.target.value })}
               >
-                {people.map(person => (
+                {people.filter(p => p.visible_in_team !== false).map(person => (
                   <option key={person.id} value={person.id}>
                     {person.full_name}
                   </option>

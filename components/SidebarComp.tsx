@@ -30,7 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange, isCollapsed
     { id: 'cla', label: 'Criterios CLA', icon: 'fact_check' },
   ];
 
-  const NavButton = ({ item }: { item: { id: string, label: string, icon: string } }) => (
+  const NavButton: React.FC<{ item: { id: string, label: string, icon: string } }> = ({ item }) => (
     <button
       onClick={() => onViewChange(item.id as ViewType)}
       className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300 group relative ${activeView === item.id
@@ -98,6 +98,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange, isCollapsed
               ? '-right-4 w-8 h-12 rounded-r-xl'
               : '-right-3 w-7 h-10 rounded-xl'}`}
           title={isCollapsed ? "Expandir Menú" : "Contraer Menú"}
+          aria-label={isCollapsed ? "Expandir Menú" : "Contraer Menú"}
         >
           <span className={`material-icons-outlined text-lg transition-transform duration-500 ${isCollapsed ? '' : 'rotate-180'}`}>
             keyboard_tab

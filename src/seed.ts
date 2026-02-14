@@ -2,6 +2,11 @@ import { supabase } from './lib/supabase';
 import { PEOPLE, MOCK_ENTITIES, RISK_MATRIX, INITIAL_CLA_DATA, INITIAL_PLANNER_DATA, INITIAL_AREAS } from '../constants';
 
 export const seedDatabase = async () => {
+    // Alert generated to confirm execution in UI
+    const confirmed = window.confirm("¿Estás seguro de que quieres borrar y regenerar los datos de prueba?");
+    if (!confirmed) return;
+
+    alert("Iniciando proceso de siembra de datos... Espera la confirmación.");
     console.log("Starting database seed...");
     try {
         // 1. Clean existing data (Optional, be careful in production)

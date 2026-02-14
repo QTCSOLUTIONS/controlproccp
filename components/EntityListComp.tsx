@@ -33,11 +33,12 @@ const EntityList: React.FC<EntityListProps> = ({ entities, onAddClick, people, o
                       onClick={() => onEditClick(entity)}
                       className="p-1.5 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                       title="Editar entidad"
+                      aria-label="Editar entidad"
                     >
                       <span className="material-icons-outlined text-sm">edit</span>
                     </button>
                     <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest ${entity.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' :
-                        entity.status === 'Execution' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
+                      entity.status === 'Execution' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
                       }`}>
                       {entity.status}
                     </span>
@@ -83,6 +84,7 @@ const EntityList: React.FC<EntityListProps> = ({ entities, onAddClick, people, o
       <button
         onClick={onAddClick}
         className="border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-8 group hover:border-blue-400 hover:bg-blue-50/30 transition-all min-h-[350px]"
+        aria-label="Crear nueva entidad"
       >
         <div className="w-16 h-16 bg-white rounded-full shadow-md flex items-center justify-center text-slate-400 group-hover:text-blue-500 group-hover:scale-110 transition-all mb-4">
           <span className="material-icons-outlined text-4xl">add</span>

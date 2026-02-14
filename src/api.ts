@@ -21,6 +21,12 @@ export const api = {
         return data as Person;
     },
 
+    deletePerson: async (id: string) => {
+        const { error } = await supabase.from('people').delete().eq('id', id);
+        if (error) throw error;
+        return true;
+    },
+
     // Audits
     getAudits: async () => {
         const { data, error } = await supabase

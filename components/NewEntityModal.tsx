@@ -58,7 +58,7 @@ const NewEntityModal: React.FC<NewEntityModalProps> = ({ onClose, onSave, people
             <h3 className="text-xl font-bold text-slate-800">Nueva Entidad Auditada</h3>
             <p className="text-xs text-slate-400 font-medium">Configure la entidad y asigne un responsable del equipo</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full text-slate-400 transition-colors">
+          <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full text-slate-400 transition-colors" aria-label="Cerrar modal">
             <span className="material-icons-outlined">close</span>
           </button>
         </div>
@@ -97,7 +97,7 @@ const NewEntityModal: React.FC<NewEntityModalProps> = ({ onClose, onSave, people
                 onChange={e => setFormData({ ...formData, responsible_id: e.target.value })}
               >
                 <option value="" disabled>Seleccione un responsable...</option>
-                {people.map(person => (
+                {people.filter(p => p.visible_in_team !== false).map(person => (
                   <option key={person.id} value={person.id}>
                     {person.full_name}
                   </option>

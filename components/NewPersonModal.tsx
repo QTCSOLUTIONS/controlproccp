@@ -36,7 +36,7 @@ const NewPersonModal: React.FC<NewPersonModalProps> = ({ onClose, onSave }) => {
             <h3 className="text-xl font-bold text-slate-800">Nuevo Miembro del Equipo</h3>
             <p className="text-xs text-slate-400 font-medium">Añada un nuevo integrante al equipo de auditoría</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full text-slate-400 transition-colors">
+          <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full text-slate-400 transition-colors" aria-label="Cerrar modal">
             <span className="material-icons-outlined">close</span>
           </button>
         </div>
