@@ -19,6 +19,7 @@ import LoginComp from './components/LoginComp';
 import UserManagement from './components/UserManagementComp';
 import { api } from './src/api';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { Toaster, toast } from 'sonner';
 
 const ControlProApp: React.FC = () => {
@@ -443,7 +444,9 @@ const ControlProApp: React.FC = () => {
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <ControlProApp />
+      <ThemeProvider>
+        <ControlProApp />
+      </ThemeProvider>
     </AuthProvider>
   );
 };
