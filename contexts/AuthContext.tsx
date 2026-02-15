@@ -52,9 +52,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 .from('people')
                 .select('*')
                 .eq('email', email)
-                .single();
+                .maybeSingle();
 
-            if (error && error.code !== 'PGRST116') {
+            if (error) {
                 console.error('Error fetching user profile:', error);
             }
 
