@@ -7,6 +7,14 @@ interface NewEntityModalProps {
   people: Person[];
 }
 
+const STANDARD_PHASES: Phase[] = [
+  { id: 'p1', name: 'Fase I - Planificación', objectives: ['Definir alcance, metodología y riesgos iniciales.'], start_week: 1, duration_weeks: 2, status: 'Planning' },
+  { id: 'p2', name: 'Fase II - Levantamiento de información', objectives: ['Recopilar evidencia y comprender procesos.'], start_week: 3, duration_weeks: 3, status: 'Planning' },
+  { id: 'p3', name: 'Fase III - Evaluación y Pruebas', objectives: ['Validar controles y medir riesgos.'], start_week: 6, duration_weeks: 3, status: 'Planning' },
+  { id: 'p4', name: 'Fase IV - Análisis de Hallazgos', objectives: ['Consolidar resultados.'], start_week: 9, duration_weeks: 2, status: 'Planning' },
+  { id: 'p5', name: 'Fase V - Informe y Cierre', objectives: ['Presentar resultados y formalizar cierre.'], start_week: 11, duration_weeks: 2, status: 'Planning' }
+];
+
 const NewEntityModal: React.FC<NewEntityModalProps> = ({ onClose, onSave, people }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -22,13 +30,7 @@ const NewEntityModal: React.FC<NewEntityModalProps> = ({ onClose, onSave, people
     }
   }, [people]);
 
-  const STANDARD_PHASES: Phase[] = [
-    { id: 'p1', name: 'Fase I - Planificación', objectives: ['Definir alcance, metodología y riesgos iniciales.'], start_week: 1, duration_weeks: 2, status: 'Planning' },
-    { id: 'p2', name: 'Fase II - Levantamiento de información', objectives: ['Recopilar evidencia y comprender procesos.'], start_week: 3, duration_weeks: 3, status: 'Planning' },
-    { id: 'p3', name: 'Fase III - Evaluación y Pruebas', objectives: ['Validar controles y medir riesgos.'], start_week: 6, duration_weeks: 3, status: 'Planning' },
-    { id: 'p4', name: 'Fase IV - Análisis de Hallazgos', objectives: ['Consolidar resultados.'], start_week: 9, duration_weeks: 2, status: 'Planning' },
-    { id: 'p5', name: 'Fase V - Informe y Cierre', objectives: ['Presentar resultados y formalizar cierre.'], start_week: 11, duration_weeks: 2, status: 'Planning' }
-  ];
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,8 +67,9 @@ const NewEntityModal: React.FC<NewEntityModalProps> = ({ onClose, onSave, people
 
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
           <div className="space-y-2">
-            <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Nombre de la Entidad</label>
+            <label htmlFor="entity-name" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Nombre de la Entidad</label>
             <input
+              id="entity-name"
               autoFocus
               required
               type="text"
@@ -79,8 +82,9 @@ const NewEntityModal: React.FC<NewEntityModalProps> = ({ onClose, onSave, people
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Fecha de Inicio</label>
+              <label htmlFor="start-date" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Fecha de Inicio</label>
               <input
+                id="start-date"
                 required
                 type="date"
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm font-medium"
@@ -89,8 +93,9 @@ const NewEntityModal: React.FC<NewEntityModalProps> = ({ onClose, onSave, people
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Persona Encargada</label>
+              <label htmlFor="responsible-id" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Persona Encargada</label>
               <select
+                id="responsible-id"
                 required
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm font-medium"
                 value={formData.responsible_id}
@@ -107,8 +112,9 @@ const NewEntityModal: React.FC<NewEntityModalProps> = ({ onClose, onSave, people
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Alcance de la Auditoría</label>
+            <label htmlFor="audit-scope" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Alcance de la Auditoría</label>
             <textarea
+              id="audit-scope"
               required
               rows={3}
               placeholder="Describa el objetivo y alcance..."

@@ -58,16 +58,18 @@ const AreasConfig: React.FC<AreasConfigProps> = ({ areas, onUpdateAreas }) => {
         <form onSubmit={handleAddArea} className="flex gap-4 mb-10">
           <div className="flex-1 relative group">
             <span className="material-icons-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">add_circle_outline</span>
-            <input 
-              type="text" 
-              placeholder="Nombre de la nueva área (Ej: Logística, IT...)" 
+            <input
+              type="text"
+              placeholder="Nombre de la nueva área (Ej: Logística, IT...)"
+              aria-label="Nombre de la nueva área"
               className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium text-slate-700"
               value={newAreaName}
               onChange={(e) => setNewAreaName(e.target.value)}
             />
           </div>
-          <button 
+          <button
             type="submit"
+            aria-label="Añadir área"
             className="px-8 py-3.5 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2"
           >
             <span className="material-icons-outlined text-sm">add</span>
@@ -81,8 +83,9 @@ const AreasConfig: React.FC<AreasConfigProps> = ({ areas, onUpdateAreas }) => {
               <div className="flex items-center gap-3 flex-1 mr-4">
                 <span className="material-icons-outlined text-slate-300 group-hover:text-blue-400 transition-colors">business_center</span>
                 {editingIndex === index ? (
-                  <input 
+                  <input
                     autoFocus
+                    aria-label={`Editar nombre del área ${area}`}
                     className="flex-1 bg-white border border-blue-200 rounded-lg px-2 py-1 text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500/20"
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
@@ -93,16 +96,17 @@ const AreasConfig: React.FC<AreasConfigProps> = ({ areas, onUpdateAreas }) => {
                   <span className="font-bold text-slate-700 text-sm">{area}</span>
                 )}
               </div>
-              
+
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button 
+                <button
                   onClick={() => startEditing(index)}
                   className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
                   title="Editar nombre"
+                  aria-label={`Editar área ${area}`}
                 >
                   <span className="material-icons-outlined text-sm">edit</span>
                 </button>
-                <button 
+                <button
                   onClick={() => handleRemoveArea(index)}
                   className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
                   title="Eliminar área"

@@ -59,9 +59,10 @@ const EditPhaseModal: React.FC<EditPhaseModalProps> = ({ phase, onClose, onSave 
 
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
           <div className="space-y-2">
-            <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Duración (Número de semanas)</label>
+            <label htmlFor="phase-duration" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Duración (Número de semanas)</label>
             <div className="flex items-center gap-4">
               <input
+                id="phase-duration"
                 type="number"
                 min="1"
                 max="12"
@@ -76,8 +77,9 @@ const EditPhaseModal: React.FC<EditPhaseModalProps> = ({ phase, onClose, onSave 
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Estado de la Fase</label>
+            <label htmlFor="phase-status" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Estado de la Fase</label>
             <select
+              id="phase-status"
               className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm font-medium"
               value={formData.status}
               onChange={e => setFormData({ ...formData, status: e.target.value as AuditStatus })}

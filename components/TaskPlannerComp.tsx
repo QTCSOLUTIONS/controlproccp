@@ -128,6 +128,7 @@ const TaskPlanner: React.FC<TaskPlannerProps> = ({ data, onUpdate }) => {
                   <select
                     className={`w-full h-full p-4 text-sm font-semibold bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer ${item.scope === '' ? 'text-slate-400 italic font-normal' : 'text-slate-800'}`}
                     value={item.scope}
+                    aria-label="Seleccionar alcance"
                     onChange={(e) => handleCellChange(item.id, 'scope', e.target.value)}
                   >
                     <option value="" disabled>Seleccionar Alcance...</option>
@@ -144,6 +145,7 @@ const TaskPlanner: React.FC<TaskPlannerProps> = ({ data, onUpdate }) => {
                     rows={1}
                     className="w-full h-full p-4 text-sm bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none resize-none placeholder:text-slate-300"
                     placeholder="Describir tarea..."
+                    aria-label="Descripción de la tarea"
                     value={item.task}
                     onChange={(e) => handleCellChange(item.id, 'task', e.target.value)}
                   />
@@ -152,6 +154,7 @@ const TaskPlanner: React.FC<TaskPlannerProps> = ({ data, onUpdate }) => {
                   <select
                     className={`w-full h-full p-4 text-xs font-bold bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none uppercase tracking-tight cursor-pointer ${item.phase === '' ? 'text-slate-400 italic font-normal' : 'text-blue-600'}`}
                     value={item.phase}
+                    aria-label="Seleccionar fase"
                     onChange={(e) => handleCellChange(item.id, 'phase', e.target.value)}
                   >
                     <option value="" disabled>Seleccionar Fase...</option>
@@ -165,6 +168,7 @@ const TaskPlanner: React.FC<TaskPlannerProps> = ({ data, onUpdate }) => {
                     onClick={() => removeRow(item.id)}
                     className="text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
                     title="Eliminar línea"
+                    aria-label="Eliminar línea"
                   >
                     <span className="material-icons-outlined text-sm">delete</span>
                   </button>

@@ -15,8 +15,16 @@ const COMPLIANCE_OPTIONS = ['Sí', 'No', 'N/A'] as const;
 
 const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, onAddArea, onUpdate, filterEntityName, onClearFilter }) => {
   const handleCellChange = (id: string, field: keyof CLACriterion, value: string) => {
+    let extraUpdates = {};
+    if (field === 'entity_name') {
+      const selectedEntity = entities.find(e => e.name === value);
+      if (selectedEntity) {
+        extraUpdates = { audit_id: selectedEntity.id };
+      }
+    }
+
     const updated = criteria.map(item =>
-      item.id === id ? { ...item, [field]: value } : item
+      item.id === id ? { ...item, [field]: value, ...extraUpdates } : item
     );
     onUpdate(updated);
   };
@@ -34,11 +42,14 @@ const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, on
   };
 
   const addRow = () => {
-    const defaultEntity = filterEntityName || (entities.length > 0 ? entities[0].name : '');
+    const defaultEntityName = filterEntityName || (entities.length > 0 ? entities[0].name : '');
+    const defaultEntity = entities.find(e => e.name === defaultEntityName);
+    const defaultAuditId = defaultEntity ? defaultEntity.id : '';
+
     const newRow: CLACriterion = {
       id: `CLA-${Date.now()}`,
-      audit_id: '', // Should be filled based on entity selection logic in real app, or ignored if virtual
-      entity_name: defaultEntity,
+      audit_id: defaultAuditId,
+      entity_name: defaultEntityName,
       area: areas[0] || '',
       criterion: '',
       description: '',
@@ -98,6 +109,7 @@ const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, on
                   <select
                     className="w-full h-full p-4 text-sm font-semibold text-slate-800 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
                     value={item.entity_name}
+                    aria-label="Seleccionar entidad"
                     onChange={(e) => handleCellChange(item.id, 'entity_name', e.target.value)}
                   >
                     <option value="" disabled>Seleccionar entidad...</option>
@@ -113,6 +125,7 @@ const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, on
                   <select
                     className="w-full h-full p-4 text-sm text-slate-700 font-medium bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
                     value={item.area}
+                    aria-label="Seleccionar área"
                     onChange={(e) => handleAreaChange(item.id, e.target.value)}
                   >
                     <option value="" disabled>Seleccionar área...</option>
@@ -128,6 +141,7 @@ const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, on
                     type="text"
                     className="w-full h-full p-4 text-sm font-bold text-blue-900 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none"
                     placeholder="Ref. Criterio..."
+                    aria-label="Referencia del criterio"
                     value={item.criterion}
                     onChange={(e) => handleCellChange(item.id, 'criterion', e.target.value)}
                   />
@@ -138,6 +152,7 @@ const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, on
                     rows={2}
                     className="w-full h-full p-4 text-sm text-slate-600 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none resize-none leading-relaxed"
                     placeholder="Descripción detallada del criterio..."
+                    aria-label="Descripción del criterio"
                     value={item.description}
                     onChange={(e) => handleCellChange(item.id, 'description', e.target.value)}
                   />
@@ -148,6 +163,7 @@ const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, on
                     type="text"
                     className="w-full h-full p-4 text-sm text-slate-500 italic bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none"
                     placeholder="Referencia normativa..."
+                    aria-label="Referencia normativa"
                     value={item.source}
                     onChange={(e) => handleCellChange(item.id, 'source', e.target.value)}
                   />
@@ -156,10 +172,11 @@ const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, on
                 <td className="p-2 border-r border-slate-100 bg-slate-50/20 text-center">
                   <select
                     className={`w-full py-2 px-3 text-xs font-extrabold uppercase tracking-widest rounded-lg border focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer shadow-sm transition-all ${item.complies === 'Sí' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                        item.complies === 'No' ? 'bg-red-50 text-red-700 border-red-200' :
-                          'bg-slate-100 text-slate-500 border-slate-200'
+                      item.complies === 'No' ? 'bg-red-50 text-red-700 border-red-200' :
+                        'bg-slate-100 text-slate-500 border-slate-200'
                       }`}
                     value={item.complies}
+                    aria-label="Cumplimiento"
                     onChange={(e) => handleCellChange(item.id, 'complies', e.target.value)}
                   >
                     {COMPLIANCE_OPTIONS.map(opt => (
@@ -173,6 +190,7 @@ const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, on
                     onClick={() => removeRow(item.id)}
                     className="text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
                     title="Eliminar criterio"
+                    aria-label="Eliminar criterio"
                   >
                     <span className="material-icons-outlined text-sm">delete</span>
                   </button>

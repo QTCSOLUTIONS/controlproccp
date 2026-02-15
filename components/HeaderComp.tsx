@@ -11,11 +11,11 @@ interface HeaderProps {
   entities?: string[];
 }
 
-const Header: React.FC<HeaderProps> = ({ 
-  searchTerm, 
-  onSearchChange, 
-  viewTitle, 
-  onNewAudit, 
+const Header: React.FC<HeaderProps> = ({
+  searchTerm,
+  onSearchChange,
+  viewTitle,
+  onNewAudit,
   showCreateButton = true,
   showNotifications = true,
   entities = []
@@ -32,6 +32,7 @@ const Header: React.FC<HeaderProps> = ({
           <select
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
+            aria-label="Filtrar por entidad"
             className="pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none w-72 transition-all text-sm font-medium appearance-none cursor-pointer"
           >
             <option value="">Todas las Entidades</option>
@@ -45,7 +46,10 @@ const Header: React.FC<HeaderProps> = ({
         </div>
 
         {showNotifications && (
-          <button className="relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors">
+          <button
+            className="relative p-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors"
+            aria-label="Notificaciones"
+          >
             <span className="material-icons-outlined">notifications</span>
             <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 border-2 border-white rounded-full"></span>
           </button>
@@ -54,7 +58,7 @@ const Header: React.FC<HeaderProps> = ({
         <div className="h-8 w-px bg-slate-200"></div>
 
         {showCreateButton && (
-          <button 
+          <button
             onClick={onNewAudit}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20"
           >

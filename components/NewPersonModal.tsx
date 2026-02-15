@@ -43,8 +43,9 @@ const NewPersonModal: React.FC<NewPersonModalProps> = ({ onClose, onSave }) => {
 
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
           <div className="space-y-2">
-            <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Nombre Completo</label>
+            <label htmlFor="new-person-name" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Nombre Completo</label>
             <input
+              id="new-person-name"
               autoFocus
               required
               type="text"
@@ -56,8 +57,9 @@ const NewPersonModal: React.FC<NewPersonModalProps> = ({ onClose, onSave }) => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Correo Electrónico</label>
+            <label htmlFor="new-person-email" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Correo Electrónico</label>
             <input
+              id="new-person-email"
               required
               type="email"
               placeholder="juan.perez@empresa.com"
@@ -68,8 +70,9 @@ const NewPersonModal: React.FC<NewPersonModalProps> = ({ onClose, onSave }) => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Rol / Cargo</label>
+            <label htmlFor="new-person-role" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Rol / Cargo</label>
             <select
+              id="new-person-role"
               className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm font-medium"
               value={formData.role}
               onChange={e => setFormData({ ...formData, role: e.target.value })}

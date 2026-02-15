@@ -41,8 +41,9 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({ person, onClose, onSa
 
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
           <div className="space-y-2">
-            <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Nombre Completo</label>
+            <label htmlFor="edit-person-name" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Nombre Completo</label>
             <input
+              id="edit-person-name"
               autoFocus
               required
               type="text"
@@ -53,8 +54,9 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({ person, onClose, onSa
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Correo Electrónico</label>
+            <label htmlFor="edit-person-email" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Correo Electrónico</label>
             <input
+              id="edit-person-email"
               required
               type="email"
               className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm font-medium"
@@ -64,8 +66,9 @@ const EditPersonModal: React.FC<EditPersonModalProps> = ({ person, onClose, onSa
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Rol / Cargo</label>
+            <label htmlFor="edit-person-role" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Rol / Cargo</label>
             <select
+              id="edit-person-role"
               className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm font-medium"
               value={formData.role}
               onChange={e => setFormData({ ...formData, role: e.target.value })}

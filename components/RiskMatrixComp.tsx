@@ -199,6 +199,7 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                   <select
                     className="w-full h-full p-4 text-sm font-semibold text-slate-800 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
                     value={risk.entity_name}
+                    aria-label="Seleccionar entidad"
                     onChange={(e) => handleCellChange(risk.id, 'entity_name', e.target.value)}
                   >
                     <option value="" disabled>Seleccionar entidad...</option>
@@ -214,6 +215,7 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                   <select
                     className={`w-full h-full p-4 text-sm bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer ${!risk.audit_scope ? 'text-slate-400 italic' : 'text-slate-700 font-medium'}`}
                     value={risk.audit_scope}
+                    aria-label="Seleccionar alcance"
                     onChange={(e) => handleCellChange(risk.id, 'audit_scope', e.target.value)}
                   >
                     <option value="" disabled>Seleccionar alcance...</option>
@@ -227,6 +229,7 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                   <select
                     className={`w-full h-full p-4 text-sm bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer ${!risk.tasks ? 'text-slate-400 italic' : 'text-slate-700 italic font-medium'}`}
                     value={risk.tasks}
+                    aria-label="Seleccionar tarea"
                     onChange={(e) => handleCellChange(risk.id, 'tasks', e.target.value)}
                   >
                     <option value="" disabled>Seleccionar tarea...</option>
@@ -241,6 +244,7 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                     type="text"
                     className="w-full h-full p-4 text-sm font-bold text-blue-800 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none placeholder:text-slate-300"
                     placeholder="Proceso..."
+                    aria-label="Proceso"
                     value={risk.process}
                     onChange={(e) => handleCellChange(risk.id, 'process', e.target.value)}
                   />
@@ -249,6 +253,7 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                   <select
                     className="w-full h-full p-4 text-sm text-slate-600 font-medium bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
                     value={risk.area}
+                    aria-label="Seleccionar área"
                     onChange={(e) => handleAreaChange(risk.id, e.target.value)}
                   >
                     <option value="" disabled>Seleccionar área...</option>
@@ -263,6 +268,7 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                     rows={2}
                     className="w-full h-full p-4 text-sm text-slate-700 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none resize-none leading-tight placeholder:text-slate-300"
                     placeholder="Descripción del riesgo..."
+                    aria-label="Descripción del riesgo"
                     value={risk.risk_description}
                     onChange={(e) => handleCellChange(risk.id, 'risk_description', e.target.value)}
                   />
@@ -272,6 +278,7 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                   <select
                     className="w-full h-full p-4 text-xs font-bold text-slate-700 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
                     value={risk.impact}
+                    aria-label="Nivel de impacto"
                     onChange={(e) => handleCellChange(risk.id, 'impact', parseInt(e.target.value))}
                   >
                     {IMPACT_LEVELS.map(level => (
@@ -289,6 +296,7 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                   <select
                     className="w-full h-full p-4 text-xs font-bold text-slate-700 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
                     value={risk.probability}
+                    aria-label="Nivel de probabilidad"
                     onChange={(e) => handleCellChange(risk.id, 'probability', parseInt(e.target.value))}
                   >
                     {PROBABILITY_LEVELS.map(level => (
@@ -311,6 +319,7 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                     rows={1}
                     className="w-full h-full p-0 text-sm bg-transparent border-none focus:ring-0 outline-none resize-none"
                     value={risk.existing_controls}
+                    aria-label="Controles existentes"
                     onChange={(e) => handleCellChange(risk.id, 'existing_controls', e.target.value)}
                   />
                 </td>
@@ -319,6 +328,7 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                   <select
                     className="w-full h-full p-4 text-xs font-bold text-slate-700 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
                     value={risk.control_effectiveness}
+                    aria-label="Efectividad del control"
                     onChange={(e) => handleCellChange(risk.id, 'control_effectiveness', parseInt(e.target.value) || 1)}
                   >
                     {EFFECTIVENESS_LEVELS.map(level => (
@@ -350,6 +360,7 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                     <select
                       className={`w-full py-2 px-3 text-[10px] font-bold uppercase tracking-wider rounded-lg border focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer shadow-sm transition-all ${getStatusColor(risk.status)}`}
                       value={risk.status}
+                      aria-label="Estado del riesgo"
                       onChange={(e) => handleCellChange(risk.id, 'status', e.target.value)}
                     >
                       {STATUS_OPTIONS.map(opt => (
@@ -363,6 +374,7 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                   <select
                     className="w-full h-full p-4 text-sm text-slate-800 font-medium bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
                     value={risk.responsible}
+                    aria-label="Responsable del riesgo"
                     onChange={(e) => handleCellChange(risk.id, 'responsible', e.target.value)}
                   >
                     <option value="" disabled>Asignar responsable...</option>
@@ -380,6 +392,7 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                     type="date"
                     className="w-full h-full p-4 text-[10px] text-slate-500 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none font-mono"
                     value={risk.implementation_date}
+                    aria-label="Fecha de implementación"
                     onChange={(e) => handleCellChange(risk.id, 'implementation_date', e.target.value)}
                   />
                 </td>
@@ -388,6 +401,7 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                     rows={1}
                     className="w-full h-full p-4 text-sm text-slate-600 italic leading-tight bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none resize-none placeholder:text-slate-300"
                     placeholder="Recomendación..."
+                    aria-label="Recomendación"
                     value={risk.recommendation}
                     onChange={(e) => handleCellChange(risk.id, 'recommendation', e.target.value)}
                   />
@@ -397,6 +411,7 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                   <button
                     onClick={() => removeRow(risk.id)}
                     className="text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                    aria-label="Eliminar riesgo"
                   >
                     <span className="material-icons-outlined text-sm">delete</span>
                   </button>

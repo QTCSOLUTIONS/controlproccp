@@ -52,10 +52,11 @@ const LoginComp: React.FC = () => {
                     )}
 
                     <div className="space-y-2">
-                        <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 pl-1">Mail</label>
+                        <label htmlFor="email" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 pl-1">Mail</label>
                         <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 material-icons-outlined text-lg">email</span>
                             <input
+                                id="email"
                                 type="email"
                                 required
                                 value={email}
@@ -67,10 +68,11 @@ const LoginComp: React.FC = () => {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 pl-1">Contraseña</label>
+                        <label htmlFor="password" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 pl-1">Contraseña</label>
                         <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 material-icons-outlined text-lg">lock</span>
                             <input
+                                id="password"
                                 type="password"
                                 required
                                 value={password}

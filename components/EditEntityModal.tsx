@@ -44,8 +44,9 @@ const EditEntityModal: React.FC<EditEntityModalProps> = ({ entity, onClose, onSa
 
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
           <div className="space-y-2">
-            <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Nombre de la Entidad</label>
+            <label htmlFor="edit-entity-name" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Nombre de la Entidad</label>
             <input
+              id="edit-entity-name"
               required
               type="text"
               className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm font-medium"
@@ -56,8 +57,9 @@ const EditEntityModal: React.FC<EditEntityModalProps> = ({ entity, onClose, onSa
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Fecha de Inicio</label>
+              <label htmlFor="edit-start-date" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Fecha de Inicio</label>
               <input
+                id="edit-start-date"
                 required
                 type="date"
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm font-medium"
@@ -66,8 +68,9 @@ const EditEntityModal: React.FC<EditEntityModalProps> = ({ entity, onClose, onSa
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Persona Encargada</label>
+              <label htmlFor="edit-responsible-id" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Persona Encargada</label>
               <select
+                id="edit-responsible-id"
                 required
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm font-medium"
                 value={formData.responsible_id}
@@ -83,8 +86,9 @@ const EditEntityModal: React.FC<EditEntityModalProps> = ({ entity, onClose, onSa
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Alcance de la Auditoría</label>
+            <label htmlFor="edit-scope" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Alcance de la Auditoría</label>
             <textarea
+              id="edit-scope"
               required
               rows={3}
               className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm font-medium"

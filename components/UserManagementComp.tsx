@@ -124,16 +124,16 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onUserUpdated, o
 
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Nombre</label>
-                                <input required type="text" value={formData.full_name} onChange={e => setFormData({ ...formData, full_name: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500/20" />
+                                <label htmlFor="new-user-name" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Nombre</label>
+                                <input id="new-user-name" required type="text" value={formData.full_name} onChange={e => setFormData({ ...formData, full_name: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500/20" />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Email</label>
-                                <input required type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500/20" />
+                                <label htmlFor="new-user-email" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Email</label>
+                                <input id="new-user-email" required type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500/20" />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Rol</label>
-                                <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500/20">
+                                <label htmlFor="new-user-role" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Rol</label>
+                                <select id="new-user-role" value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500/20">
                                     <option value="Auditor">Auditor</option>
                                     <option value="Senior Staff">Senior Staff</option>
                                     <option value="Lead Auditor">Lead Auditor</option>
@@ -142,8 +142,9 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onUserUpdated, o
                                 </select>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Contraseña</label>
+                                <label htmlFor="new-user-password" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Contraseña</label>
                                 <input
+                                    id="new-user-password"
                                     required
                                     type="text"
                                     value={formData.password}
