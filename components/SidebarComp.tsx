@@ -1,6 +1,7 @@
 import React from 'react';
 import { ViewType } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface SidebarProps {
   activeView: ViewType;
@@ -11,6 +12,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange, isCollapsed, onToggle }) => {
   const { user, signOut, dbUser } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   // Role checks
   const isAdmin = user?.email === 'ccp@qtc-solutions.com' || user?.email === 'ccp@qtc-soluitons.com' || dbUser?.role === 'MASTER';
@@ -163,7 +165,19 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange, isCollapsed
                 <p className="text-[8px] text-blue-400 font-bold uppercase tracking-wider truncate">Conectado</p>
               </div>
             )}
+
           </div>
+
+          <button
+            onClick={toggleTheme}
+            className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-[10px] font-bold uppercase tracking-widest rounded-lg flex items-center justify-center gap-2 transition-colors mb-2"
+            title={theme === 'dark' ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
+          >
+            <span className="material-icons-outlined text-sm">
+              {theme === 'dark' ? 'light_mode' : 'dark_mode'}
+            </span>
+            {!isCollapsed && (theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro')}
+          </button>
 
           <button
             onClick={() => signOut()}
