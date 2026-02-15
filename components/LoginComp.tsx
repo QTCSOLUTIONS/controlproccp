@@ -97,7 +97,7 @@ const LoginComp: React.FC = () => {
                     </button>
 
                     <p className="text-center text-[10px] text-slate-400 font-medium pt-4">
-                        Sistema restringido para personal autorizado de QTC Solutions.
+                        Sistema restringido para personal autorizado de Noval Properties
                         <br />
                         Copyright QTC-SOLUTIONS 2026
                     </p>
