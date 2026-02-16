@@ -1,5 +1,5 @@
 import { supabase } from './lib/supabase';
-import { AuditEntity, Person, RiskControl, CLACriterion, TaskPlannerEntry, AuditStatus, Phase, Task } from './types';
+import { AuditEntity, Person, RiskControl, CLACriterion, TaskPlannerEntry, AuditStatus, Phase, Task } from '../types';
 import { STANDARD_PHASES } from '../constants';
 
 export const api = {
@@ -90,7 +90,10 @@ export const api = {
 
         // Perform update
         const { error: updateError } = await supabase.from('audit_entities').update(auditData).eq('id', id);
-        if (updateError) throw updateError;
+        if (updateError) {
+            console.error("Supabase update error for audit:", id, updateError);
+            throw updateError;
+        }
 
         // Check if phases missing and inject standard ones (Correction for legacy entities)
         const { count, error: countError } = await supabase
@@ -122,20 +125,37 @@ export const api = {
             `)
             .eq('id', id);
 
-        if (selectError) throw selectError;
+        if (selectError) {
+            console.error("Error fetching updated audit after update:", selectError);
+            throw selectError;
+        }
+
         if (!data || data.length === 0) {
+            console.error("Update failed: result is empty");
             throw new Error("La actualización no se pudo recuperar (posible error de permisos).");
         }
 
+        console.log("Successfully updated entity:", data[0]);
         return data[0] as AuditEntity;
     },
 
     // Phases
     updatePhase: async (id: string, updates: Partial<Phase>) => {
+        // Robust check for ID format before hitting Supabase
+        if (!id || id.startsWith('p') || id.length < 10) {
+            console.warn("Attempted to update a phase with a likely fake ID:", id);
+            throw new Error(`ID de fase inválido (${id}). Por favor, guarde los cambios de la entidad primero para sincronizar con la base de datos.`);
+        }
+
         const { data, error } = await supabase.from('audit_phases').update(updates).eq('id', id).select();
-        if (error) throw error;
+
+        if (error) {
+            console.error("Supabase update error for phase:", id, error);
+            throw error;
+        }
+
         if (!data || data.length === 0) {
-            throw new Error("No se pudo actualizar la fase (ID inválido o sin permisos).");
+            throw new Error(`No se pudo actualizar la fase ${id}. Es posible que no exista en la base de datos o no tenga permisos.`);
         }
         return data[0] as Phase;
     },
