@@ -42,8 +42,9 @@ const ControlProApp: React.FC = () => {
   const [isPersonModalOpen, setIsPersonModalOpen] = useState(false);
   const [personToEdit, setPersonToEdit] = useState<Person | null>(null);
 
-  // Determine Role
-  const isMaster = session?.user?.email === 'ccp@qtc-solutions.com' || session?.user?.email === 'ccp@qtc-soluitons.com' || dbUser?.role === 'MASTER';
+  // Determine Role (Normalized for case-sensitivity)
+  const userEmail = session?.user?.email?.toLowerCase();
+  const isMaster = userEmail === 'ccp@qtc-solutions.com' || userEmail === 'ccp@qtc-soluitons.com' || dbUser?.role === 'MASTER';
   const isPlanificadora = dbUser?.role === 'Planificadora';
   const isAuditor = dbUser?.role === 'Auditor';
 
@@ -305,24 +306,32 @@ const ControlProApp: React.FC = () => {
 
         if (needsUpdate) {
           // Guard: Ensure we have a real UUID. Fake IDs usually start with 'p' or are very short.
-          if (!p.id || p.id.startsWith('p') || p.id.length < 10) {
+          if (!p.id || p.id.startsWith('p') || p.id.length < 20) {
             console.error("Refusing to update phase with fake ID:", p.id);
             throw new Error(`La fase "${p.name}" aún no tiene un ID de base de datos válido. Por favor, recargue la página o guarde los cambios de la entidad primero.`);
           }
 
           // Ensure we send null for alert_note if it was cleared
           const payload = {
+            audit_id: entityId, // Explicitly include audit_id for RLS validation if needed
             start_week: p.start_week,
             duration_weeks: p.duration_weeks,
             alert_note: p.alert_note === undefined ? null : p.alert_note,
             status: p.status
           };
+          console.log(`Sending update for phase ${p.id} (Entity: ${entityId}):`, payload);
           return api.updatePhase(p.id, payload as any);
         }
         return Promise.resolve(p);
       });
 
       await Promise.all(updatePromises);
+
+      // 4. SYNC: Fetch the individual entity again to get the final DB state
+      // This is crucial if DB triggers modified anything or if we need to confirm persistence.
+      const freshAudits = await api.getAudits();
+      setEntities(freshAudits);
+
       toast.success('Cronograma recalculado y guardado');
     } catch (e: any) {
       console.error("Error updating phases sequence", e);
