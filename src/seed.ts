@@ -80,7 +80,8 @@ export const seedDatabase = async () => {
         }
 
         console.log("Database seeding completed!");
-        alert("Database seeding completed successfully!");
+        alert("¡Base de datos regenerada correctamente! La página se recargará ahora.");
+        window.location.reload();
 
     } catch (e: any) {
         console.error("Seeding failed:", e);
