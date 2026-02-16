@@ -252,10 +252,12 @@ const ControlProApp: React.FC = () => {
       currentStartWeek += duration_weeks;
 
       // Determine if this specific phase has changed from what is in the DB/State
+      const isAlertChanged = (p.alert_note || null) !== (alert_note || null);
+
       if (
         p.start_week !== new_start_week ||
         p.duration_weeks !== duration_weeks ||
-        p.alert_note !== alert_note ||
+        isAlertChanged ||
         (isTarget && p.status !== updatedPhase.status)
       ) {
         hasChanges = true;
