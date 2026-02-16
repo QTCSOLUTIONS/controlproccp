@@ -49,9 +49,18 @@ export const api = {
 
     updateAudit: async (id: string, updates: Partial<AuditEntity>) => {
         const { phases, tasks, ...auditData } = updates;
-        const { data, error } = await supabase.from('audit_entities').update(auditData).eq('id', id).select().single();
+        // Remove .single() to avoid error when RLS hides the row after update
+        const { data, error } = await supabase.from('audit_entities').update(auditData).eq('id', id).select();
+        
         if (error) throw error;
-        return data as AuditEntity;
+        
+        // If data is empty array, it means RLS hid the row (e.g. ownership transfer)
+        // Return the optimistic update
+        if (!data || data.length === 0) {
+            return { id, ...auditData } as AuditEntity;
+        }
+        
+        return data[0] as AuditEntity;
     },
 
     // Phases
