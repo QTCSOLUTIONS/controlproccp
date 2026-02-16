@@ -161,45 +161,36 @@ export const api = {
         // Robust check for ID format before hitting Supabase
         if (!id || id.startsWith('p') || id.length < 20) {
             console.warn("Attempted to update a phase with a likely fake ID:", id);
-            throw new Error(`ID de fase inválido (${id}). Por favor, guarde los cambios de la entidad primero para sincronizar con la base de datos.`);
+            throw new Error(`ID de fase inválido (${id}). Por favor, guarde los cambios de la entidad primero.`);
         }
 
-        console.log(`DEBUG: Attempting to update phase ${id} with:`, updates);
+        console.log(`DEBUG: Attempting UPSERT for phase ${id} with:`, updates);
 
-        // Perform update
-        const { data, error } = await supabase.from('audit_phases').update(updates).eq('id', id).select();
+        // Include ID in payload for UPSERT to work as an UPDATE
+        const payload = { ...updates, id };
+
+        // 1. Perform UPSERT (Often has different RLS rules than UPDATE)
+        const { error } = await supabase.from('audit_phases').upsert(payload);
 
         if (error) {
-            console.error("Supabase update error for phase:", id, error);
-            const msg = error.message || error.details || "Error de red o permisos";
-            throw new Error(`Error al actualizar la fase: ${msg}`);
+            console.error("Supabase upsert error for phase:", id, error);
+            throw new Error(`Error de permisos o base de datos al guardar la fase: ${error.message}`);
         }
 
-        if (!data || data.length === 0) {
-            console.warn(`Update returned no rows for phase ${id}. Checking if record exists and is visible...`);
+        // 2. Fetch fresh record separately (following the working pattern for audits)
+        const { data, error: selectError } = await supabase
+            .from('audit_phases')
+            .select('*')
+            .eq('id', id)
+            .single();
 
-            // DIAGNOSTICS: If update fails to find the row, let's see why
-            const { data: checkData, error: checkError } = await supabase
-                .from('audit_phases')
-                .select('id, audit_id')
-                .eq('id', id);
-
-            if (checkError) {
-                console.error("Diagnostic check failed:", checkError);
-                throw new Error(`No se pudo actualizar y falló el diagnóstico: ${checkError.message}`);
-            }
-
-            if (!checkData || checkData.length === 0) {
-                console.error("PHASE NOT FOUND IN DB:", id);
-                throw new Error(`No se pudo actualizar: La fase no se encuentra en la base de datos (ID: ${id}). Posible desincronía.`);
-            } else {
-                console.warn("PHASE FOUND BUT NOT UPDATABLE. This is likely an RLS restriction.", checkData[0]);
-                throw new Error(`No tienes permisos para modificar esta fase. Verifica los permisos de fila (RLS) para el usuario.`);
-            }
+        if (selectError || !data) {
+            console.error("Error fetching updated phase:", id, selectError);
+            throw new Error("La fase se guardó pero no se pudo verificar. Por favor, recargue la página.");
         }
 
-        console.log("Update successful for phase:", id, data[0]);
-        return data[0] as Phase;
+        console.log("Upsert/Update successful for phase:", id, data);
+        return data as Phase;
     },
 
     createPhase: async (phase: Omit<Phase, 'id'> & { audit_id: string }) => {
