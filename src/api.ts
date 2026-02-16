@@ -1,5 +1,6 @@
 import { supabase } from './lib/supabase';
 import { AuditEntity, Person, RiskControl, CLACriterion, TaskPlannerEntry, AuditStatus, Phase, Task } from './types';
+import { STANDARD_PHASES } from '../constants';
 
 export const api = {
     // People
@@ -42,6 +43,11 @@ export const api = {
 
     createAudit: async (audit: Partial<AuditEntity>) => {
         const { phases, tasks, ...auditData } = audit;
+
+        // Sanitize responsible_id: empty string should be null
+        if (auditData.responsible_id === '') {
+            auditData.responsible_id = null as any;
+        }
         const { data, error } = await supabase.from('audit_entities').insert(auditData).select().single();
         if (error) throw error;
 
@@ -75,10 +81,36 @@ export const api = {
 
     updateAudit: async (id: string, updates: Partial<AuditEntity>) => {
         const { phases, tasks, ...auditData } = updates;
+
+        // Sanitize responsible_id: empty string should be null
+        if (auditData.responsible_id === '') {
+            auditData.responsible_id = null as any;
+        }
+
         // Remove .single() to avoid error when RLS hides the row after update
         const { data, error } = await supabase.from('audit_entities').update(auditData).eq('id', id).select();
 
         if (error) throw error;
+
+        // Check if phases missing and inject standard ones (Correction for legacy entities)
+        const { count, error: countError } = await supabase
+            .from('audit_phases')
+            .select('*', { count: 'exact', head: true })
+            .eq('audit_id', id);
+
+        if (!countError && count === 0) {
+            const phasesToInsert = STANDARD_PHASES.map(p => ({
+                audit_id: id,
+                name: p.name,
+                objectives: p.objectives,
+                start_week: p.start_week,
+                duration_weeks: p.duration_weeks,
+                status: 'Planning', // Default status
+                alert_note: undefined
+            }));
+
+            await supabase.from('audit_phases').insert(phasesToInsert);
+        }
 
         // If data is empty array, it means RLS hid the row (e.g. ownership transfer)
         // Return the optimistic update
