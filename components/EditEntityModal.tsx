@@ -12,19 +12,20 @@ const EditEntityModal: React.FC<EditEntityModalProps> = ({ entity, onClose, onSa
   const [formData, setFormData] = useState({
     name: entity.name,
     scope: entity.scope,
-    responsible_id: entity.responsible_id,
+    responsible_id: entity.responsible_id || '',
     start_date: entity.start_date?.split('T')[0] || '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.scope || !formData.responsible_id || !formData.start_date) return;
+    // Validate only required fields. responsible_id is now optional.
+    if (!formData.name || !formData.scope || !formData.start_date) return;
 
     onSave({
       ...entity,
       name: formData.name,
       scope: formData.scope,
-      responsible_id: formData.responsible_id,
+      responsible_id: formData.responsible_id, // Can be empty string
       start_date: formData.start_date,
     });
   };
@@ -68,14 +69,14 @@ const EditEntityModal: React.FC<EditEntityModalProps> = ({ entity, onClose, onSa
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="edit-responsible-id" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Persona Encargada</label>
+              <label htmlFor="edit-responsible-id" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Auditor Asignado</label>
               <select
                 id="edit-responsible-id"
-                required
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm font-medium"
                 value={formData.responsible_id}
                 onChange={e => setFormData({ ...formData, responsible_id: e.target.value })}
               >
+                <option value="">-- Sin Asignar --</option>
                 {people.filter(p => p.visible_in_team !== false).map(person => (
                   <option key={person.id} value={person.id}>
                     {person.full_name}

@@ -19,22 +19,14 @@ const NewEntityModal: React.FC<NewEntityModalProps> = ({ onClose, onSave, people
   const [formData, setFormData] = useState({
     name: '',
     scope: '',
-    responsible_id: people[0]?.id || '',
+    responsible_id: '', // Default to empty/unassigned
     start_date: '2026-02-16', // Default standard start date
   });
 
-  // Ensure responsible_id is updated if people list changes or initializes
-  useEffect(() => {
-    if (!formData.responsible_id && people.length > 0) {
-      setFormData(prev => ({ ...prev, responsible_id: people[0].id }));
-    }
-  }, [people]);
-
-
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.scope || !formData.responsible_id || !formData.start_date) return;
+    // Validate only required fields. responsible_id is optional.
+    if (!formData.name || !formData.scope || !formData.start_date) return;
 
     const newEntity: AuditEntity = {
       id: `e${Math.random().toString(36).substr(2, 9)}`,
@@ -93,15 +85,14 @@ const NewEntityModal: React.FC<NewEntityModalProps> = ({ onClose, onSave, people
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="responsible-id" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Persona Encargada</label>
+              <label htmlFor="responsible-id" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Auditor Asignado</label>
               <select
                 id="responsible-id"
-                required
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm font-medium"
                 value={formData.responsible_id}
                 onChange={e => setFormData({ ...formData, responsible_id: e.target.value })}
               >
-                <option value="" disabled>Seleccione un responsable...</option>
+                <option value="">-- Sin Asignar --</option>
                 {people.filter(p => p.visible_in_team !== false).map(person => (
                   <option key={person.id} value={person.id}>
                     {person.full_name}
