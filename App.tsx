@@ -218,21 +218,99 @@ const ControlProApp: React.FC = () => {
   };
 
   const handleUpdatePhase = async (entityId: string, updatedPhase: Phase) => {
+    // 1. Calculate new phases state locally to update UI immediately and determine what to save
+    const currentEntity = entities.find(e => e.id === entityId);
+    if (!currentEntity) return;
+
+    // Sort phases to ensure correct sequence calculation
+    const sortedPhases = [...(currentEntity.phases || [])].sort((a, b) => a.start_week - b.start_week);
+
+    let currentStartWeek = 1;
+    let hasChanges = false;
+
+    const calculatedPhases = sortedPhases.map(p => {
+      const isTarget = p.id === updatedPhase.id;
+      // If it's the target, use the new duration, otherwise keep existing
+      const duration_weeks = isTarget ? updatedPhase.duration_weeks : p.duration_weeks;
+
+      // Check for standard deviation
+      const standard = STANDARD_PHASES.find(sp => sp.name === p.name);
+      let alert_note = isTarget ? updatedPhase.alert_note : p.alert_note;
+
+      if (standard && duration_weeks !== standard.duration_weeks) {
+        alert_note = `ALERTA: Duración modificada de ${standard.duration_weeks} a ${duration_weeks} semanas. Planificado original: ${standard.duration_weeks}.`;
+      } else if (standard && duration_weeks === standard.duration_weeks) {
+        alert_note = undefined;
+      }
+
+      // Calculate new start_week based on cumulative progress
+      const new_start_week = currentStartWeek;
+
+      // Update accumulator for next phase
+      currentStartWeek += duration_weeks;
+
+      // Determine if this specific phase has changed from what is in the DB/State
+      if (
+        p.start_week !== new_start_week ||
+        p.duration_weeks !== duration_weeks ||
+        p.alert_note !== alert_note ||
+        (isTarget && p.status !== updatedPhase.status) // Checks if status changed in target
+      ) {
+        hasChanges = true;
+      }
+
+      return {
+        ...p,
+        ...(isTarget ? updatedPhase : {}), // Apply any other target updates
+        start_week: new_start_week,
+        duration_weeks,
+        alert_note
+      };
+    });
+
+    if (!hasChanges) return;
+
+    // 2. Optimistic Update
+    setEntities(prev => prev.map(entity => {
+      if (entity.id !== entityId) return entity;
+      return {
+        ...entity,
+        phases: calculatedPhases
+      };
+    }));
+
+    // 3. Persist to Backend
     try {
-      const updated = await api.updatePhase(updatedPhase.id, updatedPhase);
+      const updatePromises = calculatedPhases.map(p => {
+        // Find original to check if update is needed
+        const original = sortedPhases.find(op => op.id === p.id);
 
-      setEntities(prev => prev.map(entity => {
-        if (entity.id !== entityId) return entity;
+        // Update if:
+        // 1. It is the target phase (always update to be safe, or check fields)
+        // 2. Its start_week key changed
+        // 3. Its alert_note changed
+        const needsUpdate =
+          p.id === updatedPhase.id ||
+          (original && original.start_week !== p.start_week) ||
+          (original && original.alert_note !== p.alert_note);
 
-        const phases = entity.phases?.map(p => p.id === updated.id ? updated : p) || [];
+        if (needsUpdate) {
+          return api.updatePhase(p.id, {
+            start_week: p.start_week,
+            duration_weeks: p.duration_weeks,
+            alert_note: p.alert_note,
+            status: p.status
+          });
+        }
+        return Promise.resolve(p);
+      });
 
-        return {
-          ...entity,
-          phases
-        };
-      }));
+      await Promise.all(updatePromises);
+      toast.success('Cronograma reclaculado correctamente');
     } catch (e) {
-      console.error("Error updating phase", e);
+      console.error("Error updating phases sequence", e);
+      toast.error("Error al guardar la secuencia de fases.");
+      // In a real app, we might revert the optimistic update here
     }
   };
 
