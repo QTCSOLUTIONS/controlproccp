@@ -13,6 +13,10 @@ const TaskPlanner: React.FC<TaskPlannerProps> = ({ data, onUpdate }) => {
   const [localData, setLocalData] = useState<TaskPlannerEntry[]>(data);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(null);
 
+  React.useEffect(() => {
+    setLocalData(data);
+  }, [data]);
+
   const handleCellChange = async (id: string, field: keyof TaskPlannerEntry, value: string) => {
     // Optimistic update
     const updated = localData.map(item => item.id === id ? { ...item, [field]: value } : item);
