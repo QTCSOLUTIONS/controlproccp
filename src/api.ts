@@ -159,25 +159,46 @@ export const api = {
     // Phases
     updatePhase: async (id: string, updates: Partial<Phase>) => {
         // Robust check for ID format before hitting Supabase
-        // UUIDs are typically 36 characters. Fake IDs are short or start with 'p'.
         if (!id || id.startsWith('p') || id.length < 20) {
             console.warn("Attempted to update a phase with a likely fake ID:", id);
             throw new Error(`ID de fase inválido (${id}). Por favor, guarde los cambios de la entidad primero para sincronizar con la base de datos.`);
         }
 
+        console.log(`DEBUG: Attempting to update phase ${id} with:`, updates);
+
+        // Perform update
         const { data, error } = await supabase.from('audit_phases').update(updates).eq('id', id).select();
 
         if (error) {
             console.error("Supabase update error for phase:", id, error);
-            // Provide more specific message if available
             const msg = error.message || error.details || "Error de red o permisos";
             throw new Error(`Error al actualizar la fase: ${msg}`);
         }
 
         if (!data || data.length === 0) {
-            console.error("Update returned no data for phase:", id);
-            throw new Error(`No se pudo actualizar la fase ${id}. Es posible que no exista en la base de datos o que los permisos de fila (RLS) lo impidan.`);
+            console.warn(`Update returned no rows for phase ${id}. Checking if record exists and is visible...`);
+
+            // DIAGNOSTICS: If update fails to find the row, let's see why
+            const { data: checkData, error: checkError } = await supabase
+                .from('audit_phases')
+                .select('id, audit_id')
+                .eq('id', id);
+
+            if (checkError) {
+                console.error("Diagnostic check failed:", checkError);
+                throw new Error(`No se pudo actualizar y falló el diagnóstico: ${checkError.message}`);
+            }
+
+            if (!checkData || checkData.length === 0) {
+                console.error("PHASE NOT FOUND IN DB:", id);
+                throw new Error(`No se pudo actualizar: La fase no se encuentra en la base de datos (ID: ${id}). Posible desincronía.`);
+            } else {
+                console.warn("PHASE FOUND BUT NOT UPDATABLE. This is likely an RLS restriction.", checkData[0]);
+                throw new Error(`No tienes permisos para modificar esta fase. Verifica los permisos de fila (RLS) para el usuario.`);
+            }
         }
+
+        console.log("Update successful for phase:", id, data[0]);
         return data[0] as Phase;
     },
 
