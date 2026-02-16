@@ -159,7 +159,8 @@ export const api = {
     // Phases
     updatePhase: async (id: string, updates: Partial<Phase>) => {
         // Robust check for ID format before hitting Supabase
-        if (!id || id.startsWith('p') || id.length < 10) {
+        // UUIDs are typically 36 characters. Fake IDs are short or start with 'p'.
+        if (!id || id.startsWith('p') || id.length < 20) {
             console.warn("Attempted to update a phase with a likely fake ID:", id);
             throw new Error(`ID de fase inválido (${id}). Por favor, guarde los cambios de la entidad primero para sincronizar con la base de datos.`);
         }
@@ -168,11 +169,14 @@ export const api = {
 
         if (error) {
             console.error("Supabase update error for phase:", id, error);
-            throw error;
+            // Provide more specific message if available
+            const msg = error.message || error.details || "Error de red o permisos";
+            throw new Error(`Error al actualizar la fase: ${msg}`);
         }
 
         if (!data || data.length === 0) {
-            throw new Error(`No se pudo actualizar la fase ${id}. Es posible que no exista en la base de datos o no tenga permisos.`);
+            console.error("Update returned no data for phase:", id);
+            throw new Error(`No se pudo actualizar la fase ${id}. Es posible que no exista en la base de datos o que los permisos de fila (RLS) lo impidan.`);
         }
         return data[0] as Phase;
     },
