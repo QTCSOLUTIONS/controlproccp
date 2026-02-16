@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Person } from '../types';
+import { seedDatabase } from '../src/seed';
 
 interface UserManagementProps {
     users: Person[];
@@ -63,13 +64,23 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onUserUpdated, o
                     <h2 className="text-2xl font-black text-slate-800 tracking-tight">Gestión de Usuarios</h2>
                     <p className="text-slate-500 font-medium text-sm">Administración de acceso y perfiles de la plataforma.</p>
                 </div>
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all flex items-center gap-2"
-                >
-                    <span className="material-icons-outlined">person_add</span>
-                    Crear Usuario
-                </button>
+                <div className="flex gap-3">
+                    <button
+                        onClick={() => seedDatabase()}
+                        className="px-5 py-2.5 border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-bold rounded-xl transition-all flex items-center gap-2"
+                        title="Reinicia la base de datos con los valores predeterminados"
+                    >
+                        <span className="material-icons-outlined">restart_alt</span>
+                        Regenerar Datos
+                    </button>
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all flex items-center gap-2"
+                    >
+                        <span className="material-icons-outlined">person_add</span>
+                        Crear Usuario
+                    </button>
+                </div>
             </div>
 
             <div className="grid gap-4">
