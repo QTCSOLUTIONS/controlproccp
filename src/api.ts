@@ -112,10 +112,10 @@ export const api = {
             await supabase.from('audit_phases').insert(phasesToInsert);
         }
 
-        // If data is empty array, it means RLS hid the row (e.g. ownership transfer)
-        // Return the optimistic update
+        // If data is empty array, it means RLS hid the row or update failed
         if (!data || data.length === 0) {
-            return { id, ...auditData } as AuditEntity;
+            console.error("Update returned no data. Possible RLS issue or ID mismatch.");
+            throw new Error("La actualización no se guardó en la base de datos (posible error de permisos o ID no encontrado).");
         }
 
         return data[0] as AuditEntity;
