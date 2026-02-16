@@ -169,6 +169,8 @@ export const api = {
         // Include ID in payload for UPSERT to work as an UPDATE
         const payload = { ...updates, id };
 
+        console.log(`DEBUG: Executing UPSERT on audit_phases for ID ${id}. Full payload:`, JSON.stringify(payload));
+
         // 1. Perform UPSERT (Often has different RLS rules than UPDATE)
         const { error } = await supabase.from('audit_phases').upsert(payload);
 

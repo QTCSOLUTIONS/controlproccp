@@ -311,18 +311,20 @@ const ControlProApp: React.FC = () => {
             throw new Error(`La fase "${p.name}" aún no tiene un ID de base de datos válido. Por favor, recargue la página o guarde los cambios de la entidad primero.`);
           }
 
-          // Ensure we send null for alert_note if it was cleared
+          // Safety: ensure we don't lose the name or objectives during merging
+          const originalPhase = sortedPhases.find(op => op.id === p.id);
+          const finalName = p.name || originalPhase?.name || 'Fase';
+          const finalObjectives = p.objectives || originalPhase?.objectives || [];
+
           const payload = {
+            ...p,
             id: p.id,
             audit_id: entityId,
-            name: p.name,       // MANDATORY for UPSERT
-            objectives: p.objectives, // MANDATORY for UPSERT
-            start_week: p.start_week,
-            duration_weeks: p.duration_weeks,
-            alert_note: p.alert_note === undefined ? null : p.alert_note,
-            status: p.status
+            name: finalName,
+            objectives: finalObjectives,
+            alert_note: p.alert_note === undefined ? null : p.alert_note
           };
-          console.log(`Sending update for phase ${p.id} (Entity: ${entityId}):`, payload);
+          console.log(`DEBUG: Sending Phase Update Payload for ${p.id}:`, JSON.stringify(payload));
           return api.updatePhase(p.id, payload as any);
         }
         return Promise.resolve(p);
