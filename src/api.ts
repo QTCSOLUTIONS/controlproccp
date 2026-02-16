@@ -80,17 +80,17 @@ export const api = {
     },
 
     updateAudit: async (id: string, updates: Partial<AuditEntity>) => {
-        const { phases, tasks, ...auditData } = updates;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id: _, phases, tasks, ...auditData } = updates;
 
         // Sanitize responsible_id: empty string should be null
         if (auditData.responsible_id === '') {
             auditData.responsible_id = null as any;
         }
 
-        // Remove .single() to avoid error when RLS hides the row after update
-        const { data, error } = await supabase.from('audit_entities').update(auditData).eq('id', id).select();
-
-        if (error) throw error;
+        // Perform update
+        const { error: updateError } = await supabase.from('audit_entities').update(auditData).eq('id', id);
+        if (updateError) throw updateError;
 
         // Check if phases missing and inject standard ones (Correction for legacy entities)
         const { count, error: countError } = await supabase
@@ -105,17 +105,26 @@ export const api = {
                 objectives: p.objectives,
                 start_week: p.start_week,
                 duration_weeks: p.duration_weeks,
-                status: 'Planning', // Default status
-                alert_note: undefined
+                status: 'Planning',
+                alert_note: null
             }));
 
             await supabase.from('audit_phases').insert(phasesToInsert);
         }
 
-        // If data is empty array, it means RLS hid the row or update failed
+        // Fetch COMPLETE updated data including real DB IDs for phases/tasks
+        const { data, error: selectError } = await supabase
+            .from('audit_entities')
+            .select(`
+                *,
+                phases:audit_phases(*),
+                tasks:audit_tasks(*)
+            `)
+            .eq('id', id);
+
+        if (selectError) throw selectError;
         if (!data || data.length === 0) {
-            console.error("Update returned no data. Possible RLS issue or ID mismatch.");
-            throw new Error("La actualización no se guardó en la base de datos (posible error de permisos o ID no encontrado).");
+            throw new Error("La actualización no se pudo recuperar (posible error de permisos).");
         }
 
         return data[0] as AuditEntity;
@@ -123,9 +132,12 @@ export const api = {
 
     // Phases
     updatePhase: async (id: string, updates: Partial<Phase>) => {
-        const { data, error } = await supabase.from('audit_phases').update(updates).eq('id', id).select().single();
+        const { data, error } = await supabase.from('audit_phases').update(updates).eq('id', id).select();
         if (error) throw error;
-        return data as Phase;
+        if (!data || data.length === 0) {
+            throw new Error("No se pudo actualizar la fase (ID inválido o sin permisos).");
+        }
+        return data[0] as Phase;
     },
 
     createPhase: async (phase: Omit<Phase, 'id'> & { audit_id: string }) => {
