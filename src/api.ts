@@ -37,7 +37,11 @@ export const api = {
         phases:audit_phases(*),
         tasks:audit_tasks(*)
       `);
-        if (error) throw error;
+        if (error) {
+            console.error("Error fetching audits:", error);
+            throw error;
+        }
+        console.log("Fetched Audits with phases:", data);
         return data as AuditEntity[];
     },
 
@@ -69,11 +73,13 @@ export const api = {
                 .select();
 
             if (phasesError) {
-                console.error('Error creating phases:', phasesError);
-                // We don't throw here to avoid failing the whole creation, but ideally we should handle this transactionally
-            } else {
-                return { ...data, phases: insertedPhases } as AuditEntity;
+                console.error('Error creating phases for entity:', data.id, phasesError);
+                // Rollback: if phases fail, the entity is in a dirty state. 
+                // For a robust system we should delete the entity or use a DB function.
+                // For now, we'll throw to inform the user.
+                throw new Error(`Error al crear las fases de la auditoría: ${phasesError.message}`);
             }
+            return { ...data, phases: insertedPhases } as AuditEntity;
         }
 
         return data as AuditEntity;
@@ -83,13 +89,24 @@ export const api = {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { id: _, phases, tasks, ...auditData } = updates;
 
-        // Sanitize responsible_id: empty string should be null
-        if (auditData.responsible_id === '') {
-            auditData.responsible_id = null as any;
+        // SANITIZE: Only allow specific fields to be updated via this method
+        const payload: any = {};
+        if (auditData.name !== undefined) payload.name = auditData.name;
+        if (auditData.scope !== undefined) payload.scope = auditData.scope;
+        if (auditData.responsible_id !== undefined) {
+            payload.responsible_id = auditData.responsible_id === '' ? null : auditData.responsible_id;
         }
+        if (auditData.start_date !== undefined) payload.start_date = auditData.start_date;
+        if (auditData.status !== undefined) payload.status = auditData.status;
+        if (auditData.progress !== undefined) payload.progress = auditData.progress;
+
+        // CONSISTENCY: Always update last_updated when any edit occurs
+        payload.last_updated = new Date().toISOString().split('T')[0];
+
+        console.log(`Updating audit ${id} with sanitized payload:`, payload);
 
         // Perform update
-        const { error: updateError } = await supabase.from('audit_entities').update(auditData).eq('id', id);
+        const { error: updateError } = await supabase.from('audit_entities').update(payload).eq('id', id);
         if (updateError) {
             console.error("Supabase update error for audit:", id, updateError);
             throw updateError;

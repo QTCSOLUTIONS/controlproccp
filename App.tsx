@@ -150,12 +150,14 @@ const ControlProApp: React.FC = () => {
 
   const handleUpdateEntity = async (updatedEntity: AuditEntity) => {
     try {
+      console.log("Starting entity update for ID:", updatedEntity.id, updatedEntity);
       const updated = await api.updateAudit(updatedEntity.id, updatedEntity);
-      setEntities(entities.map(e => e.id === updated.id ? { ...e, ...updated } : e));
+      // Replace the entire object to ensure we get real IDs from the DB
+      setEntities(prev => prev.map(e => e.id === updated.id ? updated : e));
       setEntityToEdit(null);
-      toast.success('Auditoría actualizada correctamente');
+      toast.success('Auditoría actualizada y sincronizada correctamente');
     } catch (e: any) {
-      console.error("Error updating audit", e);
+      console.error("Error updating audit:", e);
       toast.error(`Error al actualizar auditoría: ${e.message}`);
     }
   };
@@ -296,18 +298,23 @@ const ControlProApp: React.FC = () => {
         // 1. It is the target phase
         // 2. Its start_week key changed
         // 3. Its alert_note changed
-        // 4. Its status changed (target phase)
         const needsUpdate =
           p.id === updatedPhase.id ||
           (original && original.start_week !== p.start_week) ||
-          (original && original.alert_note !== p.alert_note);
+          (original && (original.alert_note || null) !== (p.alert_note || null));
 
         if (needsUpdate) {
+          // Guard: Ensure we have a real UUID. Fake IDs usually start with 'p' or are very short.
+          if (!p.id || p.id.startsWith('p') || p.id.length < 10) {
+            console.error("Refusing to update phase with fake ID:", p.id);
+            throw new Error(`La fase "${p.name}" aún no tiene un ID de base de datos válido. Por favor, recargue la página o guarde los cambios de la entidad primero.`);
+          }
+
           // Ensure we send null for alert_note if it was cleared
           const payload = {
             start_week: p.start_week,
             duration_weeks: p.duration_weeks,
-            alert_note: p.alert_note === undefined ? null : p.alert_note, // Send null if undefined/cleared
+            alert_note: p.alert_note === undefined ? null : p.alert_note,
             status: p.status
           };
           return api.updatePhase(p.id, payload as any);
@@ -321,7 +328,11 @@ const ControlProApp: React.FC = () => {
       console.error("Error updating phases sequence", e);
       // Revert optimistic update
       setEntities(previousEntities);
-      toast.error(`Error al guardar la secuencia de fases: ${e.message || 'Desconocido'}`);
+
+      const errorMessage = e.message || e.error_description || 'Error desconocido';
+      toast.error(`Error al guardar el calendario: ${errorMessage}`, {
+        duration: 5000,
+      });
     }
   };
 

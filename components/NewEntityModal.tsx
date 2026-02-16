@@ -7,12 +7,12 @@ interface NewEntityModalProps {
   people: Person[];
 }
 
-const STANDARD_PHASES: Phase[] = [
-  { id: 'p1', name: 'Fase I - Planificación', objectives: ['Definir alcance, metodología y riesgos iniciales.'], start_week: 1, duration_weeks: 2, status: 'Planning' },
-  { id: 'p2', name: 'Fase II - Levantamiento de información', objectives: ['Recopilar evidencia y comprender procesos.'], start_week: 3, duration_weeks: 3, status: 'Planning' },
-  { id: 'p3', name: 'Fase III - Evaluación y Pruebas', objectives: ['Validar controles y medir riesgos.'], start_week: 6, duration_weeks: 3, status: 'Planning' },
-  { id: 'p4', name: 'Fase IV - Análisis de Hallazgos', objectives: ['Consolidar resultados.'], start_week: 9, duration_weeks: 2, status: 'Planning' },
-  { id: 'p5', name: 'Fase V - Informe y Cierre', objectives: ['Presentar resultados y formalizar cierre.'], start_week: 11, duration_weeks: 2, status: 'Planning' }
+const STANDARD_PHASES: Omit<Phase, 'id'>[] = [
+  { name: 'Fase I - Planificación', objectives: ['Definir alcance, metodología y riesgos iniciales.'], start_week: 1, duration_weeks: 2, status: 'Planning' },
+  { name: 'Fase II - Levantamiento de información', objectives: ['Recopilar evidencia y comprender procesos.'], start_week: 3, duration_weeks: 3, status: 'Planning' },
+  { name: 'Fase III - Evaluación y Pruebas', objectives: ['Validar controles y medir riesgos.'], start_week: 6, duration_weeks: 3, status: 'Planning' },
+  { name: 'Fase IV - Análisis de Hallazgos', objectives: ['Consolidar resultados.'], start_week: 9, duration_weeks: 2, status: 'Planning' },
+  { name: 'Fase V - Informe y Cierre', objectives: ['Presentar resultados y formalizar cierre.'], start_week: 11, duration_weeks: 2, status: 'Planning' }
 ];
 
 const NewEntityModal: React.FC<NewEntityModalProps> = ({ onClose, onSave, people }) => {
@@ -38,7 +38,7 @@ const NewEntityModal: React.FC<NewEntityModalProps> = ({ onClose, onSave, people
       progress: 0,
       last_updated: new Date().toISOString().split('T')[0],
       tasks: [],
-      phases: STANDARD_PHASES,
+      phases: STANDARD_PHASES as Phase[],
     };
 
     onSave(newEntity);
