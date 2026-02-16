@@ -313,7 +313,7 @@ const ControlProApp: React.FC = () => {
 
           // Ensure we send null for alert_note if it was cleared
           const payload = {
-            audit_id: entityId, // Explicitly include audit_id for RLS validation if needed
+            // REMOVED audit_id: entityId - Some RLS policies block sending foreign keys in UPDATE even if they haven't changed
             start_week: p.start_week,
             duration_weeks: p.duration_weeks,
             alert_note: p.alert_note === undefined ? null : p.alert_note,
