@@ -311,20 +311,14 @@ const ControlProApp: React.FC = () => {
             throw new Error(`La fase "${p.name}" aún no tiene un ID de base de datos válido. Por favor, recargue la página o guarde los cambios de la entidad primero.`);
           }
 
-          // Safety: ensure we don't lose the name or objectives during merging
-          const originalPhase = sortedPhases.find(op => op.id === p.id);
-          const finalName = p.name || originalPhase?.name || 'Fase';
-          const finalObjectives = p.objectives || originalPhase?.objectives || [];
-
+          // Send ONLY what is allowed to change. Mutation of metadata columns often triggers RLS blocks.
           const payload = {
-            ...p,
-            id: p.id,
-            audit_id: entityId,
-            name: finalName,
-            objectives: finalObjectives,
-            alert_note: p.alert_note === undefined ? null : p.alert_note
+            start_week: p.start_week,
+            duration_weeks: p.duration_weeks,
+            status: p.status,
+            alert_note: p.alert_note || null
           };
-          console.log(`DEBUG: Sending Phase Update Payload for ${p.id}:`, JSON.stringify(payload));
+          console.log(`DEBUG: Sending minimal update for phase ${p.id}:`, payload);
           return api.updatePhase(p.id, payload as any);
         }
         return Promise.resolve(p);
