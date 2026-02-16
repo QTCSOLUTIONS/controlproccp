@@ -164,27 +164,25 @@ export const api = {
             throw new Error(`ID de fase inválido (${id}). Por favor, guarde los cambios de la entidad primero.`);
         }
 
-        console.log(`DEBUG: Updating phase ${id} with minimal payload:`, updates);
+        console.log(`DEBUG: Updating phase ${id} with payload:`, updates);
 
-        // 1. Perform UPDATE (standard PATCH)
-        const { error } = await supabase.from('audit_phases').update(updates).eq('id', id);
+        // Perform update and return data in one go to ensure it actually hit the DB
+        // Using .select().single() ensures that if RLS blocks the update, it will throw an error or return null/error
+        const { data, error } = await supabase
+            .from('audit_phases')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single();
 
         if (error) {
             console.error("Supabase update error for phase:", id, error);
-            throw new Error(`Error de permisos o base de datos: ${error.message}`);
+            throw new Error(`Error al actualizar la fase: ${error.message}`);
         }
 
-        // 2. Fetch fresh record separately
-        const { data, error: selectError } = await supabase
-            .from('audit_phases')
-            .select('*')
-            .eq('id', id)
-            .single();
-
-        if (selectError || !data) {
-            // If update worked but select failed, it's an RLS read block, but we still consider it "done" for state purposes
-            console.warn("Update worked but verification fetch failed:", selectError);
-            return { id, ...updates } as Phase;
+        if (!data) {
+            console.error("Update successful but no data returned for phase:", id);
+            throw new Error("No se pudo confirmar la actualización de la fase (posible restricción de seguridad).");
         }
 
         console.log("Update successful and verified for phase:", id);
