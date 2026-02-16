@@ -133,9 +133,9 @@ const ControlProApp: React.FC = () => {
   }, [people, entities, searchTerm]);
 
   const handleAddEntity = async (newEntity: Partial<AuditEntity>) => {
-    // Strip fake ID if present
+    // Strip fake ID if present so Supabase generates a real UUID
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { ...entityData } = newEntity;
+    const { id, ...entityData } = newEntity;
 
     try {
       const created = await api.createAudit(entityData);
@@ -236,12 +236,13 @@ const ControlProApp: React.FC = () => {
 
       // Check for standard deviation
       const standard = STANDARD_PHASES.find(sp => sp.name === p.name);
-      let alert_note = isTarget ? updatedPhase.alert_note : p.alert_note;
+      // Use null instead of undefined for clearing to ensure it sends to Supabase
+      let alert_note: string | null | undefined = isTarget ? updatedPhase.alert_note : p.alert_note;
 
       if (standard && duration_weeks !== standard.duration_weeks) {
         alert_note = `ALERTA: Duración modificada de ${standard.duration_weeks} a ${duration_weeks} semanas. Planificado original: ${standard.duration_weeks}.`;
       } else if (standard && duration_weeks === standard.duration_weeks) {
-        alert_note = undefined; // Clear alert if back to standard
+        alert_note = null; // Explicitly set to null to clear in DB
       }
 
       // Calculate new start_week based on cumulative progress
@@ -265,11 +266,14 @@ const ControlProApp: React.FC = () => {
         ...(isTarget ? updatedPhase : {}), // Apply any other target updates
         start_week: new_start_week,
         duration_weeks,
-        alert_note
+        alert_note: alert_note as string | undefined // Cast back for state, but payload will handle null
       };
     });
 
     if (!hasChanges) return;
+
+    // Guardar estado anterior para rollback
+    const previousEntities = [...entities];
 
     // 2. Optimistic Update
     setEntities(prev => prev.map(entity => {
@@ -297,22 +301,25 @@ const ControlProApp: React.FC = () => {
           (original && original.alert_note !== p.alert_note);
 
         if (needsUpdate) {
-          return api.updatePhase(p.id, {
+          // Ensure we send null for alert_note if it was cleared
+          const payload = {
             start_week: p.start_week,
             duration_weeks: p.duration_weeks,
-            alert_note: p.alert_note,
+            alert_note: p.alert_note === undefined ? null : p.alert_note, // Send null if undefined/cleared
             status: p.status
-          });
+          };
+          return api.updatePhase(p.id, payload as any);
         }
         return Promise.resolve(p);
       });
 
       await Promise.all(updatePromises);
       toast.success('Cronograma recalculado y guardado');
-    } catch (e) {
+    } catch (e: any) {
       console.error("Error updating phases sequence", e);
-      toast.error("Error al guardar la secuencia de fases.");
-      // In a real app, we might revert the optimistic update here
+      // Revert optimistic update
+      setEntities(previousEntities);
+      toast.error(`Error al guardar la secuencia de fases: ${e.message || 'Desconocido'}`);
     }
   };
 
