@@ -13,7 +13,7 @@ const EditEntityModal: React.FC<EditEntityModalProps> = ({ entity, onClose, onSa
     name: entity.name,
     scope: entity.scope,
     responsible_id: entity.responsible_id,
-    start_date: entity.start_date,
+    start_date: entity.start_date?.split('T')[0] || '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
