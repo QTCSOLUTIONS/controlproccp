@@ -44,6 +44,32 @@ export const api = {
         const { phases, tasks, ...auditData } = audit;
         const { data, error } = await supabase.from('audit_entities').insert(auditData).select().single();
         if (error) throw error;
+
+        // Create initial phases if provided
+        if (phases && phases.length > 0) {
+            const phasesToInsert = phases.map(p => ({
+                audit_id: data.id,
+                name: p.name,
+                objectives: p.objectives,
+                start_week: p.start_week,
+                duration_weeks: p.duration_weeks,
+                status: p.status,
+                alert_note: p.alert_note
+            }));
+
+            const { data: insertedPhases, error: phasesError } = await supabase
+                .from('audit_phases')
+                .insert(phasesToInsert)
+                .select();
+
+            if (phasesError) {
+                console.error('Error creating phases:', phasesError);
+                // We don't throw here to avoid failing the whole creation, but ideally we should handle this transactionally
+            } else {
+                return { ...data, phases: insertedPhases } as AuditEntity;
+            }
+        }
+
         return data as AuditEntity;
     },
 
@@ -51,15 +77,15 @@ export const api = {
         const { phases, tasks, ...auditData } = updates;
         // Remove .single() to avoid error when RLS hides the row after update
         const { data, error } = await supabase.from('audit_entities').update(auditData).eq('id', id).select();
-        
+
         if (error) throw error;
-        
+
         // If data is empty array, it means RLS hid the row (e.g. ownership transfer)
         // Return the optimistic update
         if (!data || data.length === 0) {
             return { id, ...auditData } as AuditEntity;
         }
-        
+
         return data[0] as AuditEntity;
     },
 
