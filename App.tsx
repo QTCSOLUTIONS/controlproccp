@@ -313,7 +313,10 @@ const ControlProApp: React.FC = () => {
 
           // Ensure we send null for alert_note if it was cleared
           const payload = {
-            audit_id: entityId, // Restore audit_id for UPSERT compatibility
+            id: p.id,
+            audit_id: entityId,
+            name: p.name,       // MANDATORY for UPSERT
+            objectives: p.objectives, // MANDATORY for UPSERT
             start_week: p.start_week,
             duration_weeks: p.duration_weeks,
             alert_note: p.alert_note === undefined ? null : p.alert_note,
