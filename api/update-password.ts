@@ -32,7 +32,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
     });
 
-    const { userId, newPassword } = req.body;
+    const { userId, newPassword, email, role, fullName } = req.body;
 
     if (!userId || !newPassword) {
         return res.status(400).json({ error: 'Missing required fields: userId, newPassword' });
@@ -43,12 +43,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
+        // Try to update the user
         const { data, error } = await supabaseAdmin.auth.admin.updateUserById(
             userId,
             { password: newPassword }
         );
 
         if (error) {
+            // Case: User not found in Auth but exists in DB (e.g. seeded user)
+            // We need to CREATE the user in Auth with the SAME ID to link them.
+            if (error.message.includes('User not found') || error.status === 404) {
+                if (!email) {
+                    return res.status(400).json({ error: 'User not found in Auth. Please provide email to create the account.' });
+                }
+
+                console.log(`User ${userId} not found in Auth. creating new Auth user...`);
+
+                const { data: newData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+                    id: userId, // CRITICAL: Use the same ID as in 'people' table
+                    email: email,
+                    password: newPassword,
+                    email_confirm: true,
+                    user_metadata: { full_name: fullName, role: role }
+                });
+
+                if (createError) {
+                    // If create fails (e.g. email already taken by another ID), we can't do much.
+                    throw createError;
+                }
+
+                return res.status(200).json({ message: 'User account created and password set successfully' });
+            }
+
             throw error;
         }
 
