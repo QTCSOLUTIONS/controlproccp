@@ -39,6 +39,7 @@ export interface AuditEntity {
   start_date: string;
   tasks?: Task[];
   phases?: Phase[];
+  members?: Person[]; // New field for multiple auditors assignment
 }
 
 export interface RiskControl {
