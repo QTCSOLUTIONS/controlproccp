@@ -112,18 +112,21 @@ export const api = {
             .from('audit_entities')
             .update(payload)
             .eq('id', id)
-            .select()
-            .single();
+            .select();
 
         if (updateError) {
             console.error("[API] Supabase update error for audit:", id, updateError);
             throw new Error(`Error al actualizar auditoría: ${updateError.message}`);
         }
 
-        if (!updatedData) {
-            console.error("[API] Update successful but no data returned for audit:", id);
-            throw new Error("No se pudo confirmar la actualización de la auditoría (posible restricción de seguridad).");
+        if (!updatedData || updatedData.length === 0) {
+            console.error("[API] Update successful but no data returned for audit (0 rows affected):", id);
+            // This usually means the ID doesn't exist or RLS filtered it out.
+            // We should NOT throw here if we want to be lenient, but for now we want to know if it failed.
+            throw new Error("No se pudo actualizar la auditoría. Es posible que no exista o no tenga permisos.");
         }
+
+        console.log(`[API] Update affected ${updatedData.length} rows.`);
 
         // Check if phases missing and inject standard ones (Correction for legacy entities)
         const { count, error: countError } = await supabase
