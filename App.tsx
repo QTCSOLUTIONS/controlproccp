@@ -151,14 +151,19 @@ const ControlProApp: React.FC = () => {
 
   const handleUpdateEntity = async (updatedEntity: AuditEntity) => {
     try {
-      console.log("Starting entity update for ID:", updatedEntity.id, updatedEntity);
+      console.log("[App] Starting entity update for ID:", updatedEntity.id);
+      console.log("[App] Payload received from Modal:", updatedEntity);
+
       const updated = await api.updateAudit(updatedEntity.id, updatedEntity);
+
+      console.log("[App] Entity updated successfully. API Response:", updated);
+
       // Replace the entire object to ensure we get real IDs from the DB
       setEntities(prev => prev.map(e => e.id === updated.id ? updated : e));
       setEntityToEdit(null);
       toast.success('Auditoría actualizada y sincronizada correctamente');
     } catch (e: any) {
-      console.error("Error updating audit:", e);
+      console.error("[App] Error updating audit:", e);
       toast.error(`Error al actualizar auditoría: ${e.message}`);
     }
   };
@@ -225,8 +230,6 @@ const ControlProApp: React.FC = () => {
     const currentEntity = entities.find(e => e.id === entityId);
     if (!currentEntity) return;
 
-    // Sort phases by Name (Fase I, II, III...) to ensure correct waterfall sequence regardless of current weeks.
-    // This prevents issues if the 'start_week' data is currently desynchronized.
     const sortedPhases = [...(currentEntity.phases || [])].sort((a, b) => a.name.localeCompare(b.name));
 
     let currentStartWeek = 1;
@@ -234,27 +237,20 @@ const ControlProApp: React.FC = () => {
 
     const calculatedPhases = sortedPhases.map(p => {
       const isTarget = p.id === updatedPhase.id;
-      // If it's the target, use the new duration, otherwise keep existing
       const duration_weeks = isTarget ? updatedPhase.duration_weeks : p.duration_weeks;
 
-      // Check for standard deviation
       const standard = STANDARD_PHASES.find(sp => sp.name === p.name);
-      // Use null instead of undefined for clearing to ensure it sends to Supabase
       let alert_note: string | null | undefined = isTarget ? updatedPhase.alert_note : p.alert_note;
 
       if (standard && duration_weeks !== standard.duration_weeks) {
         alert_note = `ALERTA: Duración modificada de ${standard.duration_weeks} a ${duration_weeks} semanas. Planificado original: ${standard.duration_weeks}.`;
       } else if (standard && duration_weeks === standard.duration_weeks) {
-        alert_note = null; // Explicitly set to null to clear in DB
+        alert_note = null;
       }
 
-      // Calculate new start_week based on cumulative progress
       const new_start_week = currentStartWeek;
-
-      // Update accumulator for next phase
       currentStartWeek += duration_weeks;
 
-      // Determine if this specific phase has changed from what is in the DB/State
       const isAlertChanged = (p.alert_note || null) !== (alert_note || null);
 
       if (
@@ -268,10 +264,10 @@ const ControlProApp: React.FC = () => {
 
       return {
         ...p,
-        ...(isTarget ? updatedPhase : {}), // Apply any other target updates
+        ...(isTarget ? updatedPhase : {}),
         start_week: new_start_week,
         duration_weeks,
-        alert_note: alert_note as string | undefined // Cast back for state, but payload will handle null
+        alert_note: alert_note as string | undefined
       };
     });
 
@@ -283,64 +279,51 @@ const ControlProApp: React.FC = () => {
     // 2. Optimistic Update
     setEntities(prev => prev.map(entity => {
       if (entity.id !== entityId) return entity;
-      return {
-        ...entity,
-        phases: calculatedPhases
-      };
+      return { ...entity, phases: calculatedPhases };
     }));
 
     // 3. Persist to Backend
     try {
-      const updatePromises = calculatedPhases.map(p => {
-        // Find original to check if update is needed
+      // Instead of updating all at once and then fetching, let's update and capture results to maintain consistency
+      const results = await Promise.all(calculatedPhases.map(async (p) => {
         const original = sortedPhases.find(op => op.id === p.id);
-
-        // Update if:
-        // 1. It is the target phase
-        // 2. Its start_week key changed
-        // 3. Its alert_note changed
         const needsUpdate =
           p.id === updatedPhase.id ||
           (original && original.start_week !== p.start_week) ||
           (original && (original.alert_note || null) !== (p.alert_note || null));
 
         if (needsUpdate) {
-          // Guard: Ensure we have a real UUID. Fake IDs usually start with 'p' or are very short.
           if (!p.id || p.id.startsWith('p') || p.id.length < 20) {
-            console.error("Refusing to update phase with fake ID:", p.id);
-            throw new Error(`La fase "${p.name}" aún no tiene un ID de base de datos válido. Por favor, recargue la página o guarde los cambios de la entidad primero.`);
+            throw new Error(`La fase "${p.name}" aún no tiene un ID de base de datos válido.`);
           }
 
-          // Send ONLY what is allowed to change. Mutation of metadata columns often triggers RLS blocks.
           const payload = {
             start_week: p.start_week,
             duration_weeks: p.duration_weeks,
             status: p.status,
             alert_note: p.alert_note || null
           };
-          console.log(`DEBUG: Sending minimal update for phase ${p.id}:`, payload);
-          return api.updatePhase(p.id, payload as any);
+
+          return await api.updatePhase(p.id, payload as any);
         }
-        return Promise.resolve(p);
-      });
+        return p;
+      }));
 
-      await Promise.all(updatePromises);
+      // 4. Update the specific entity in state with the confirmed results from the DB
+      setEntities(prev => prev.map(entity => {
+        if (entity.id !== entityId) return entity;
+        return { ...entity, phases: results };
+      }));
 
-      // 4. SYNC: Fetch the individual entity again to get the final DB state
-      // This is crucial if DB triggers modified anything or if we need to confirm persistence.
+      // 5. Final Background Sync (Crucial)
       const freshAudits = await api.getAudits();
       setEntities(freshAudits);
 
       toast.success('Cronograma recalculado y guardado');
     } catch (e: any) {
       console.error("Error updating phases sequence", e);
-      // Revert optimistic update
       setEntities(previousEntities);
-
-      const errorMessage = e.message || e.error_description || 'Error desconocido';
-      toast.error(`Error al guardar el calendario: ${errorMessage}`, {
-        duration: 5000,
-      });
+      toast.error(`Error al guardar: ${e.message || 'Error desconocido'}`);
     }
   };
 
