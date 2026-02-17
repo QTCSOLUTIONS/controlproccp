@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Person } from '../types';
-import { seedDatabase } from '../src/seed';
 
 interface UserManagementProps {
     users: Person[];
@@ -18,6 +17,10 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onUserUpdated, o
         visible_in_team: true
     });
     const [loading, setLoading] = useState(false);
+    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<Person | null>(null);
+    const [newPassword, setNewPassword] = useState('');
+    const [passLoading, setPassLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -57,6 +60,39 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onUserUpdated, o
         }
     };
 
+    const handleUpdatePassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedUser || !newPassword || newPassword.length < 6) {
+            alert("La contraseña debe tener al menos 6 caracteres.");
+            return;
+        }
+
+        setPassLoading(true);
+        try {
+            const response = await fetch('/api/update-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: selectedUser.id, newPassword })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Error al actualizar contraseña');
+            }
+
+            alert('Contraseña actualizada correctamente.');
+            setIsPasswordModalOpen(false);
+            setNewPassword('');
+            setSelectedUser(null);
+        } catch (error: any) {
+            console.error('Error updating password:', error);
+            alert(`Error: ${error.message}`);
+        } finally {
+            setPassLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -65,14 +101,6 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onUserUpdated, o
                     <p className="text-slate-500 font-medium text-sm">Administración de acceso y perfiles de la plataforma.</p>
                 </div>
                 <div className="flex gap-3">
-                    <button
-                        onClick={() => seedDatabase()}
-                        className="px-5 py-2.5 border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-bold rounded-xl transition-all flex items-center gap-2"
-                        title="Reinicia la base de datos con los valores predeterminados"
-                    >
-                        <span className="material-icons-outlined">restart_alt</span>
-                        Regenerar Datos
-                    </button>
                     <button
                         onClick={() => setIsModalOpen(true)}
                         className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all flex items-center gap-2"
@@ -97,7 +125,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onUserUpdated, o
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-4">
                             <div className="flex flex-col items-center" title={user.visible_in_team !== false ? "Visible en Equipo" : "Oculto en Equipo"}>
                                 <span className={`material-icons-outlined text-sm ${user.visible_in_team !== false ? 'text-emerald-500' : 'text-slate-300'}`}>
                                     {user.visible_in_team !== false ? 'visibility' : 'visibility_off'}
@@ -107,6 +135,18 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onUserUpdated, o
                                 }`}>
                                 {user.role}
                             </div>
+
+                            <button
+                                onClick={() => {
+                                    setSelectedUser(user);
+                                    setIsPasswordModalOpen(true);
+                                }}
+                                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-amber-50 text-slate-300 hover:text-amber-500 transition-colors"
+                                title="Cambiar contraseña"
+                                aria-label="Cambiar contraseña"
+                            >
+                                <span className="material-icons-outlined">vpn_key</span>
+                            </button>
 
                             <button
                                 onClick={() => {
@@ -184,6 +224,43 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onUserUpdated, o
                                 <button disabled={loading} type="submit" className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/20 flex justify-center items-center gap-2">
                                     {loading ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : null}
                                     {loading ? 'Creando...' : 'Crear Usuario'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+            {isPasswordModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+                    <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-8 animate-in zoom-in-95">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold text-slate-800">Cambiar Contraseña</h3>
+                            <button onClick={() => setIsPasswordModalOpen(false)} className="material-icons-outlined text-slate-400 hover:text-slate-600" aria-label="Cerrar modal">close</button>
+                        </div>
+
+                        <p className="text-sm text-slate-500 mb-6">
+                            Actualizando la contraseña para <span className="font-bold text-slate-800">{selectedUser?.full_name}</span>
+                        </p>
+
+                        <form onSubmit={handleUpdatePassword} className="space-y-5">
+                            <div className="space-y-2">
+                                <label htmlFor="new-password" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Nueva Contraseña</label>
+                                <input
+                                    id="new-password"
+                                    required
+                                    type="text"
+                                    value={newPassword}
+                                    onChange={e => setNewPassword(e.target.value)}
+                                    placeholder="Mínimo 6 caracteres"
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
+                                />
+                            </div>
+
+                            <div className="pt-4 flex gap-3">
+                                <button type="button" onClick={() => setIsPasswordModalOpen(false)} className="flex-1 py-3 text-slate-600 font-bold hover:bg-slate-50 rounded-xl">Cancelar</button>
+                                <button disabled={passLoading} type="submit" className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/20 flex justify-center items-center gap-2">
+                                    {passLoading ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> : null}
+                                    {passLoading ? 'Guardando...' : 'Cambiar Contraseña'}
                                 </button>
                             </div>
                         </form>
