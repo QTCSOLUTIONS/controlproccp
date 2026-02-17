@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuditEntity, Person } from '../types';
+import MultiSelectUser from './MultiSelectUser';
 
 interface EditEntityModalProps {
   entity: AuditEntity;
@@ -13,20 +14,24 @@ const EditEntityModal: React.FC<EditEntityModalProps> = ({ entity, onClose, onSa
     name: entity.name,
     scope: entity.scope,
     responsible_id: entity.responsible_id || '',
+    members: entity.members ? entity.members.map(m => m.id) : (entity.responsible_id ? [entity.responsible_id] : []),
     start_date: entity.start_date?.split('T')[0] || '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Validate only required fields. responsible_id is now optional.
     if (!formData.name || !formData.scope || !formData.start_date) return;
+
+    const primaryResponsible = formData.members.length > 0 ? formData.members[0] : '';
+    const selectedMembers = people.filter(p => formData.members.includes(p.id));
 
     onSave({
       ...entity,
       name: formData.name,
       scope: formData.scope,
-      responsible_id: formData.responsible_id, // Can be empty string
+      responsible_id: primaryResponsible,
       start_date: formData.start_date,
+      members: selectedMembers
     });
   };
 
@@ -56,7 +61,7 @@ const EditEntityModal: React.FC<EditEntityModalProps> = ({ entity, onClose, onSa
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2">
               <label htmlFor="edit-start-date" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Fecha de Inicio</label>
               <input
@@ -68,22 +73,13 @@ const EditEntityModal: React.FC<EditEntityModalProps> = ({ entity, onClose, onSa
                 onChange={e => setFormData({ ...formData, start_date: e.target.value })}
               />
             </div>
-            <div className="space-y-2">
-              <label htmlFor="edit-responsible-id" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Auditor Asignado</label>
-              <select
-                id="edit-responsible-id"
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm font-medium"
-                value={formData.responsible_id}
-                onChange={e => setFormData({ ...formData, responsible_id: e.target.value })}
-              >
-                <option value="">-- Sin Asignar --</option>
-                {people.filter(p => p.visible_in_team !== false).map(person => (
-                  <option key={person.id} value={person.id}>
-                    {person.full_name}
-                  </option>
-                ))}
-              </select>
-            </div>
+
+            <MultiSelectUser
+              users={people.filter(p => p.visible_in_team !== false)}
+              selectedUserIds={formData.members}
+              onChange={(ids) => setFormData({ ...formData, members: ids })}
+              label="Equipo Auditor Asignado"
+            />
           </div>
 
           <div className="space-y-2">

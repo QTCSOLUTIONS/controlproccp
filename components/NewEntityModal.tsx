@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AuditEntity, AuditStatus, Phase, Person } from '../types';
+import MultiSelectUser from './MultiSelectUser';
 
 interface NewEntityModalProps {
   onClose: () => void;
@@ -19,7 +20,8 @@ const NewEntityModal: React.FC<NewEntityModalProps> = ({ onClose, onSave, people
   const [formData, setFormData] = useState({
     name: '',
     scope: '',
-    responsible_id: '', // Default to empty/unassigned
+    responsible_id: '', // Deprecated but kept for compatibility
+    members: [] as string[],
     start_date: '2026-02-16', // Default standard start date
   });
 
@@ -28,17 +30,29 @@ const NewEntityModal: React.FC<NewEntityModalProps> = ({ onClose, onSave, people
     // Validate only required fields. responsible_id is optional.
     if (!formData.name || !formData.scope || !formData.start_date) return;
 
+    // Use the first member as primary responsible for legacy support if needed
+    const primaryResponsible = formData.members.length > 0 ? formData.members[0] : '';
+
+    // Map member IDs to Person objects for frontend state if needed, but API usually takes IDs for create
+    // However, our API createAudit takes Partial<AuditEntity> where members?: Person[]
+    // But in API implementation: const membersToInsert = members.map((m: any) => ({ user_id: m.id || m }))
+    // So passing IDs strings is fine if API handles it. 
+    // Let's pass objects to strict type compliance if types.ts says members?: Person[]
+
+    const selectedMembers = people.filter(p => formData.members.includes(p.id));
+
     const newEntity: AuditEntity = {
       id: `e${Math.random().toString(36).substr(2, 9)}`,
       name: formData.name,
       scope: formData.scope,
-      responsible_id: formData.responsible_id,
+      responsible_id: primaryResponsible,
       start_date: formData.start_date,
       status: 'Planning' as AuditStatus,
       progress: 0,
       last_updated: new Date().toISOString().split('T')[0],
       tasks: [],
       phases: STANDARD_PHASES as Phase[],
+      members: selectedMembers
     };
 
     onSave(newEntity);
@@ -72,7 +86,7 @@ const NewEntityModal: React.FC<NewEntityModalProps> = ({ onClose, onSave, people
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2">
               <label htmlFor="start-date" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Fecha de Inicio</label>
               <input
@@ -84,22 +98,13 @@ const NewEntityModal: React.FC<NewEntityModalProps> = ({ onClose, onSave, people
                 onChange={e => setFormData({ ...formData, start_date: e.target.value })}
               />
             </div>
-            <div className="space-y-2">
-              <label htmlFor="responsible-id" className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Auditor Asignado</label>
-              <select
-                id="responsible-id"
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-sm font-medium"
-                value={formData.responsible_id}
-                onChange={e => setFormData({ ...formData, responsible_id: e.target.value })}
-              >
-                <option value="">-- Sin Asignar --</option>
-                {people.filter(p => p.visible_in_team !== false).map(person => (
-                  <option key={person.id} value={person.id}>
-                    {person.full_name}
-                  </option>
-                ))}
-              </select>
-            </div>
+
+            <MultiSelectUser
+              users={people.filter(p => p.visible_in_team !== false)}
+              selectedUserIds={formData.members}
+              onChange={(ids) => setFormData({ ...formData, members: ids })}
+              label="Equipo Auditor Asignado"
+            />
           </div>
 
           <div className="space-y-2">
