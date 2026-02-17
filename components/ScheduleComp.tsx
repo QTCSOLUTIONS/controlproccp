@@ -22,24 +22,12 @@ const Schedule: React.FC<ScheduleProps> = ({ entities, onUpdatePhaseStatus, onUp
   // pero adoptando la estética de la referencia.
 
   const BASE_DATE = useMemo(() => {
-    const validDates = entities
-      .map(e => new Date(e.start_date).getTime())
-      .filter(t => !isNaN(t));
-
-    if (validDates.length === 0) {
-      const now = new Date();
-      // Lunes de la semana actual
-      const day = now.getDay();
-      const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-      return new Date(now.setDate(diff));
-    }
-
-    const minDate = new Date(Math.min(...validDates));
-    // Ajustar al lunes de esa semana
-    const day = minDate.getDay();
-    const diff = minDate.getDate() - day + (day === 0 ? -6 : 1);
-    return new Date(minDate.setDate(diff));
-  }, [entities]);
+    const now = new Date();
+    // Lunes de la semana actual
+    const day = now.getDay();
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+    return new Date(now.setDate(diff));
+  }, []);
 
   const [selectedPhaseInfo, setSelectedPhaseInfo] = useState<{ entityId: string, phase: Phase } | null>(null);
   const [alert, setAlert] = useState<{ show: boolean, message: string } | null>(null);
@@ -82,7 +70,7 @@ const Schedule: React.FC<ScheduleProps> = ({ entities, onUpdatePhaseStatus, onUp
     const msPerWeek = 7 * 24 * 60 * 60 * 1000;
 
     // Diferencia en semanas entre el inicio global y el inicio de la entidad
-    const entityOffsetWeeks = Math.max(0, (entityStart.getTime() - BASE_DATE.getTime()) / msPerWeek);
+    const entityOffsetWeeks = (entityStart.getTime() - BASE_DATE.getTime()) / msPerWeek;
 
     // La posición final es el offset de la entidad + el start_week propio de la fase
     const absoluteStartWeek = entityOffsetWeeks + (phase.start_week - 1);
