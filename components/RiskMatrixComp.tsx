@@ -168,6 +168,24 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
         </button>
       </div>
 
+      {filterEntityName && (
+        <div className="px-6 pb-4 bg-slate-50/30 border-b border-slate-200 flex items-center gap-4 animate-in slide-in-from-top-2">
+          <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Equipo Asignado:</span>
+          {entities.find(e => e.name === filterEntityName)?.members && entities.find(e => e.name === filterEntityName)!.members!.length > 0 ? (
+            <div className="flex items-center gap-3">
+              {entities.find(e => e.name === filterEntityName)!.members!.map((member: Person) => (
+                <div key={member.id} className="flex items-center gap-2 bg-white px-2 py-1 rounded-full border border-slate-200 shadow-sm">
+                  <img src={member.avatar_url} className="w-5 h-5 rounded-full" alt={member.full_name} title={member.full_name} />
+                  <span className="text-xs font-bold text-slate-700">{member.full_name}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <span className="text-xs text-slate-400 italic">No hay auditores asignados.</span>
+          )}
+        </div>
+      )}
+
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[2800px]">
           <thead>
