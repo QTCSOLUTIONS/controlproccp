@@ -72,7 +72,13 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onUserUpdated, o
             const response = await fetch('/api/update-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: selectedUser.id, newPassword })
+                body: JSON.stringify({
+                    userId: selectedUser.id,
+                    newPassword,
+                    email: selectedUser.email,
+                    role: selectedUser.role,
+                    fullName: selectedUser.full_name
+                })
             });
 
             const data = await response.json();
