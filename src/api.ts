@@ -89,6 +89,8 @@ export const api = {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { id: _, phases, tasks, ...auditData } = updates;
 
+        console.log(`[API] updateAudit called for ID: ${id}`, updates);
+
         // SANITIZE: Only allow specific fields to be updated via this method
         const payload: any = {};
         if (auditData.name !== undefined) payload.name = auditData.name;
@@ -100,16 +102,27 @@ export const api = {
         if (auditData.status !== undefined) payload.status = auditData.status;
         if (auditData.progress !== undefined) payload.progress = auditData.progress;
 
-        // CONSISTENCY: Always update last_updated when any edit occurs
-        payload.last_updated = new Date().toISOString().split('T')[0];
+        // CONSISTENCY: Always update last_updated when any edit occurs. Use full ISO string.
+        payload.last_updated = new Date().toISOString();
 
-        console.log(`Updating audit ${id} with sanitized payload:`, payload);
+        console.log(`[API] Updating audit ${id} with sanitized payload:`, payload);
 
-        // Perform update
-        const { error: updateError } = await supabase.from('audit_entities').update(payload).eq('id', id);
+        // Perform update and return data in one go to ensure it actually hit the DB
+        const { data: updatedData, error: updateError } = await supabase
+            .from('audit_entities')
+            .update(payload)
+            .eq('id', id)
+            .select()
+            .single();
+
         if (updateError) {
-            console.error("Supabase update error for audit:", id, updateError);
-            throw updateError;
+            console.error("[API] Supabase update error for audit:", id, updateError);
+            throw new Error(`Error al actualizar auditoría: ${updateError.message}`);
+        }
+
+        if (!updatedData) {
+            console.error("[API] Update successful but no data returned for audit:", id);
+            throw new Error("No se pudo confirmar la actualización de la auditoría (posible restricción de seguridad).");
         }
 
         // Check if phases missing and inject standard ones (Correction for legacy entities)
@@ -119,6 +132,7 @@ export const api = {
             .eq('audit_id', id);
 
         if (!countError && count === 0) {
+            console.log("[API] Legacy entity detected (no phases), injecting standard ones...");
             const phasesToInsert = STANDARD_PHASES.map(p => ({
                 audit_id: id,
                 name: p.name,
@@ -128,12 +142,11 @@ export const api = {
                 status: 'Planning',
                 alert_note: null
             }));
-
             await supabase.from('audit_phases').insert(phasesToInsert);
         }
 
         // Fetch COMPLETE updated data including real DB IDs for phases/tasks
-        const { data, error: selectError } = await supabase
+        const { data: finalData, error: selectError } = await supabase
             .from('audit_entities')
             .select(`
                 *,
@@ -143,17 +156,17 @@ export const api = {
             .eq('id', id);
 
         if (selectError) {
-            console.error("Error fetching updated audit after update:", selectError);
+            console.error("[API] Error fetching updated audit after update:", selectError);
             throw selectError;
         }
 
-        if (!data || data.length === 0) {
-            console.error("Update failed: result is empty");
-            throw new Error("La actualización no se pudo recuperar (posible error de permisos).");
+        if (!finalData || finalData.length === 0) {
+            console.error("[API] Update failed: result is empty after final select");
+            throw new Error("La actualización no se pudo recuperar de la base de datos.");
         }
 
-        console.log("Successfully updated entity:", data[0]);
-        return data[0] as AuditEntity;
+        console.log("[API] Successfully updated and synced entity:", finalData[0]);
+        return finalData[0] as AuditEntity;
     },
 
     // Phases
