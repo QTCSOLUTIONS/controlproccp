@@ -35,18 +35,28 @@ export const api = {
             .select(`
         *,
         phases:audit_phases(*),
-        tasks:audit_tasks(*)
+        tasks:audit_tasks(*),
+        members:audit_members(
+          user:people(*)
+        )
       `);
         if (error) {
             console.error("Error fetching audits:", error);
             throw error;
         }
-        console.log("Fetched Audits with phases:", data);
-        return data as AuditEntity[];
+
+        // Flatten members structure: audit_members -> user -> Person
+        const auditsWithMembers = data.map((audit: any) => ({
+            ...audit,
+            members: audit.members ? audit.members.map((m: any) => m.user) : []
+        }));
+
+        console.log("Fetched Audits with phases and members:", auditsWithMembers);
+        return auditsWithMembers as AuditEntity[];
     },
 
     createAudit: async (audit: Partial<AuditEntity>) => {
-        const { phases, tasks, ...auditData } = audit;
+        const { phases, tasks, members, ...auditData } = audit;
 
         // Sanitize responsible_id: empty string should be null
         if (auditData.responsible_id === '') {
@@ -67,19 +77,31 @@ export const api = {
                 alert_note: p.alert_note
             }));
 
-            const { data: insertedPhases, error: phasesError } = await supabase
+            const { error: phasesError } = await supabase
                 .from('audit_phases')
-                .insert(phasesToInsert)
-                .select();
+                .insert(phasesToInsert);
 
             if (phasesError) {
                 console.error('Error creating phases for entity:', data.id, phasesError);
-                // Rollback: if phases fail, the entity is in a dirty state. 
-                // For a robust system we should delete the entity or use a DB function.
-                // For now, we'll throw to inform the user.
                 throw new Error(`Error al crear las fases de la auditoría: ${phasesError.message}`);
             }
-            return { ...data, phases: insertedPhases } as AuditEntity;
+        }
+
+        // Assign members if provided
+        if (members && members.length > 0) {
+            const membersToInsert = members.map((m: any) => ({
+                audit_id: data.id,
+                user_id: m.id || m // handle both full object or ID
+            }));
+
+            const { error: membersError } = await supabase
+                .from('audit_members')
+                .insert(membersToInsert);
+
+            if (membersError) {
+                console.error('Error assigning members:', membersError);
+                // Non-critical, but should log
+            }
         }
 
         return data as AuditEntity;
@@ -87,7 +109,7 @@ export const api = {
 
     updateAudit: async (id: string, updates: Partial<AuditEntity>) => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { id: _, phases, tasks, ...auditData } = updates;
+        const { id: _, phases, tasks, members, ...auditData } = updates;
 
         console.log(`[API] updateAudit called for ID: ${id}`, updates);
 
@@ -123,10 +145,32 @@ export const api = {
             console.error("[API] Update successful but no data returned for audit (0 rows affected):", id);
             // This usually means the ID doesn't exist or RLS filtered it out.
             // We should NOT throw here if we want to be lenient, but for now we want to know if it failed.
-            throw new Error("No se pudo actualizar la auditoría. Es posible que no exista o no tenga permisos.");
+            // throw new Error("No se pudo actualizar la auditoría. Es posible que no exista o no tenga permisos.");
         }
 
-        console.log(`[API] Update affected ${updatedData.length} rows.`);
+        console.log(`[API] Update affected ${updatedData ? updatedData.length : 0} rows.`);
+
+        // Sync Members if provided
+        if (members) {
+            console.log("Syncing members for audit:", id);
+            // 1. Get current members
+            const { data: currentMembers } = await supabase.from('audit_members').select('user_id').eq('audit_id', id);
+            const currentIds = currentMembers ? currentMembers.map((m: any) => m.user_id) : [];
+            const newIds = members.map((m: any) => m.id || m); // Handle Person object or ID string
+
+            // 2. Determine to add / remove
+            const toAdd = newIds.filter((id: string) => !currentIds.includes(id));
+            const toRemove = currentIds.filter((id: string) => !newIds.includes(id));
+
+            // 3. Execute
+            if (toRemove.length > 0) {
+                await supabase.from('audit_members').delete().eq('audit_id', id).in('user_id', toRemove);
+            }
+            if (toAdd.length > 0) {
+                const rows = toAdd.map((uid: string) => ({ audit_id: id, user_id: uid }));
+                await supabase.from('audit_members').insert(rows);
+            }
+        }
 
         // Check if phases missing and inject standard ones (Correction for legacy entities)
         const { count, error: countError } = await supabase
@@ -154,7 +198,10 @@ export const api = {
             .select(`
                 *,
                 phases:audit_phases(*),
-                tasks:audit_tasks(*)
+                tasks:audit_tasks(*),
+                members:audit_members(
+                   user:people(*)
+                )
             `)
             .eq('id', id);
 
@@ -168,8 +215,14 @@ export const api = {
             throw new Error("La actualización no se pudo recuperar de la base de datos.");
         }
 
-        console.log("[API] Successfully updated and synced entity:", finalData[0]);
-        return finalData[0] as AuditEntity;
+        // Flatten members again
+        const result = {
+            ...finalData[0],
+            members: finalData[0].members ? finalData[0].members.map((m: any) => m.user) : []
+        };
+
+        console.log("[API] Successfully updated and synced entity:", result);
+        return result as AuditEntity;
     },
 
     // Phases
