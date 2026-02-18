@@ -1,5 +1,7 @@
 import React from 'react';
 import { AuditEntity, Person } from '../types';
+import { useAuth } from '../contexts/AuthContext';
+import { canCreateEntity, canEditEntity } from '../src/lib/permissions';
 
 interface EntityListProps {
   entities: AuditEntity[];
@@ -10,10 +12,14 @@ interface EntityListProps {
 }
 
 const EntityList: React.FC<EntityListProps> = ({ entities, onAddClick, people, onViewDetails, onEditClick }) => {
+  const { dbUser } = useAuth();
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-in slide-in-from-right-4 duration-700">
       {entities.map((entity) => {
         const responsible = people.find(p => p.id === entity.responsible_id);
+        const canEdit = canEditEntity(dbUser, entity);
+
         const formatDate = (dateStr: string) => {
           if (!dateStr) return 'N/A';
           const d = new Date(dateStr);
@@ -29,14 +35,16 @@ const EntityList: React.FC<EntityListProps> = ({ entities, onAddClick, people, o
                 </div>
                 <div className="flex flex-col items-end gap-2">
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => onEditClick(entity)}
-                      className="p-1.5 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                      title="Editar entidad"
-                      aria-label="Editar entidad"
-                    >
-                      <span className="material-icons-outlined text-sm">edit</span>
-                    </button>
+                    {canEdit && (
+                      <button
+                        onClick={() => onEditClick(entity)}
+                        className="p-1.5 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                        title="Editar entidad"
+                        aria-label="Editar entidad"
+                      >
+                        <span className="material-icons-outlined text-sm">edit</span>
+                      </button>
+                    )}
                     <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest ${entity.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' :
                       entity.status === 'Execution' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
                       }`}>
@@ -105,17 +113,19 @@ const EntityList: React.FC<EntityListProps> = ({ entities, onAddClick, people, o
         );
       })}
 
-      <button
-        onClick={onAddClick}
-        className="border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-8 group hover:border-blue-400 hover:bg-blue-50/30 transition-all min-h-[350px]"
-        aria-label="Crear nueva entidad"
-      >
-        <div className="w-16 h-16 bg-white rounded-full shadow-md flex items-center justify-center text-slate-400 group-hover:text-blue-500 group-hover:scale-110 transition-all mb-4">
-          <span className="material-icons-outlined text-4xl">add</span>
-        </div>
-        <span className="text-lg font-bold text-slate-800">Nueva Entidad</span>
-        <p className="text-sm text-slate-400 mt-2 px-8 text-center leading-relaxed">Asigne una nueva entidad al programa de control interno.</p>
-      </button>
+      {canCreateEntity(dbUser) && (
+        <button
+          onClick={onAddClick}
+          className="border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-8 group hover:border-blue-400 hover:bg-blue-50/30 transition-all min-h-[350px]"
+          aria-label="Crear nueva entidad"
+        >
+          <div className="w-16 h-16 bg-white rounded-full shadow-md flex items-center justify-center text-slate-400 group-hover:text-blue-500 group-hover:scale-110 transition-all mb-4">
+            <span className="material-icons-outlined text-4xl">add</span>
+          </div>
+          <span className="text-lg font-bold text-slate-800">Nueva Entidad</span>
+          <p className="text-sm text-slate-400 mt-2 px-8 text-center leading-relaxed">Asigne una nueva entidad al programa de control interno.</p>
+        </button>
+      )}
     </div>
   );
 };
