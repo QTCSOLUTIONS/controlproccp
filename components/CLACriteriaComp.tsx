@@ -22,6 +22,10 @@ const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, on
     setHasChanges(false);
   }, [criteria]);
 
+  const filteredCriteria = filterEntityName
+    ? localCriteria.filter(c => c.entity_name === filterEntityName)
+    : localCriteria;
+
   const handleCellChange = (id: string, field: keyof CLACriterion, value: string) => {
     let extraUpdates = {};
     if (field === 'entity_name') {
@@ -130,7 +134,7 @@ const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, on
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {localCriteria.map((item) => (
+            {filteredCriteria.map((item) => (
               <tr key={item.id} className="group hover:bg-slate-50 transition-colors">
                 <td className="p-0 border-r border-slate-100">
                   <select

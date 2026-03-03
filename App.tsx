@@ -228,25 +228,41 @@ const ControlProApp: React.FC = () => {
   const handleUpdateClaCriteria = async (newCriteria: CLACriterion[]) => {
     setLoading(true);
     try {
-      // Find deleted ones
+      // 1. Find deleted items
       const deletedIds = claCriteria
         .filter(old => !newCriteria.find(nw => nw.id === old.id))
         .map(old => old.id);
 
+      // 2. Identify new and modified items
+      const createdItems = newCriteria.filter(item => item.id.startsWith('CLA-'));
+      const updatedItems = newCriteria.filter(item => {
+        if (item.id.startsWith('CLA-')) return false;
+        const original = claCriteria.find(old => old.id === item.id);
+        if (!original) return false;
+        // Compare relevant fields to detect changes
+        return (
+          original.area !== item.area ||
+          original.criterion !== item.criterion ||
+          original.description !== item.description ||
+          original.complies !== item.complies ||
+          original.source !== item.source ||
+          original.audit_id !== item.audit_id
+        );
+      });
+
+      console.log(`[CLA Sync] Submitting: ${createdItems.length} new, ${updatedItems.length} updated, ${deletedIds.length} deleted.`);
+
       await Promise.all([
         ...deletedIds.map(id => api.deleteCla(id)),
-        ...newCriteria.map(item => {
-          if (item.id.startsWith('CLA-')) {
-            // New item
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { id, entity_name, ...data } = item;
-            return api.createCla(data);
-          } else {
-            // Update item
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { id, entity_name, ...data } = item;
-            return api.updateCla(id, data);
-          }
+        ...createdItems.map(item => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { id, entity_name, ...data } = item;
+          return api.createCla(data);
+        }),
+        ...updatedItems.map(item => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { id, entity_name, ...data } = item;
+          return api.updateCla(id, data);
         })
       ]);
 
@@ -264,25 +280,49 @@ const ControlProApp: React.FC = () => {
   const handleUpdateRisks = async (newRisks: RiskControl[]) => {
     setLoading(true);
     try {
-      // Find deleted ones
+      // 1. Find deleted items
       const deletedIds = risks
         .filter(old => !newRisks.find(nw => nw.id === old.id))
         .map(old => old.id);
 
+      // 2. Identify new and modified items
+      const createdItems = newRisks.filter(item => item.id.startsWith('RC-'));
+      const updatedItems = newRisks.filter(item => {
+        if (item.id.startsWith('RC-')) return false;
+        const original = risks.find(old => old.id === item.id);
+        if (!original) return false;
+        // Compare relevant fields to detect changes
+        return (
+          original.entity_name !== item.entity_name ||
+          original.audit_id !== item.audit_id ||
+          original.tasks !== item.tasks ||
+          original.process !== item.process ||
+          original.area !== item.area ||
+          original.risk_description !== item.risk_description ||
+          original.impact !== item.impact ||
+          original.probability !== item.probability ||
+          original.existing_controls !== item.existing_controls ||
+          original.control_effectiveness !== item.control_effectiveness ||
+          original.status !== item.status ||
+          original.responsible !== item.responsible ||
+          original.implementation_date !== item.implementation_date ||
+          original.recommendation !== item.recommendation
+        );
+      });
+
+      console.log(`[Risk Sync] Submitting: ${createdItems.length} new, ${updatedItems.length} updated, ${deletedIds.length} deleted.`);
+
       await Promise.all([
         ...deletedIds.map(id => api.deleteRisk(id)),
-        ...newRisks.map(item => {
-          if (item.id.startsWith('RC-')) {
-            // New item
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { id, entity_name, audit_scope, ...data } = item;
-            return api.createRisk(data);
-          } else {
-            // Update item
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { id, entity_name, audit_scope, ...data } = item;
-            return api.updateRisk(id, data);
-          }
+        ...createdItems.map(item => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { id, entity_name, audit_scope, ...data } = item;
+          return api.createRisk(data);
+        }),
+        ...updatedItems.map(item => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { id, entity_name, audit_scope, ...data } = item;
+          return api.updateRisk(id, data);
         })
       ]);
 

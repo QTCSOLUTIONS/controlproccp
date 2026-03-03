@@ -104,7 +104,32 @@ export const api = {
             }
         }
 
-        return data as AuditEntity;
+        // Fetch COMPLETE created data including real DB IDs for phases/tasks
+        const { data: finalData, error: selectError } = await supabase
+            .from('audit_entities')
+            .select(`
+                *,
+                phases:audit_phases(*),
+                tasks:audit_tasks(*),
+                members:audit_members(
+                    user:people(*)
+                )
+            `)
+            .eq('id', data.id)
+            .single();
+
+        if (selectError) {
+            console.error("[API] Error fetching created audit:", selectError);
+            return data as AuditEntity; // Fallback to partial data if fetch fails
+        }
+
+        // Flatten members
+        const result = {
+            ...finalData,
+            members: finalData.members ? finalData.members.map((m: any) => m.user) : []
+        };
+
+        return result as AuditEntity;
     },
 
     updateAudit: async (id: string, updates: Partial<AuditEntity>) => {
