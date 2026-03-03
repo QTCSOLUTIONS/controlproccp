@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { RiskControl, AuditEntity, TaskPlannerEntry, Person } from '../types';
 import { SCOPE_OPTIONS } from '../constants';
 import { useAuth } from '../contexts/AuthContext';
@@ -44,10 +44,17 @@ const STATUS_OPTIONS = ['Pendiente', 'En curso', 'Completado'] as const;
 
 const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, areas, onAddArea, filterEntityName, onClearFilter, onUpdate, people = [] }) => {
   const { dbUser } = useAuth();
+  const [localRisks, setLocalRisks] = useState<RiskControl[]>(risks);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  useEffect(() => {
+    setLocalRisks(risks);
+    setHasChanges(false);
+  }, [risks]);
 
   const filteredRisks = filterEntityName
-    ? risks.filter(r => r.entity_name === filterEntityName)
-    : risks;
+    ? localRisks.filter(r => r.entity_name === filterEntityName)
+    : localRisks;
 
   const canEditRisk = (riskOrEntityName: RiskControl | string | undefined) => {
     let entityName = '';
@@ -59,7 +66,7 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
 
     if (!entityName && filterEntityName) entityName = filterEntityName;
 
-    if (!entityName) return false; // If no entity associated, can't edit safely? Or maybe allow if manager?
+    if (!entityName) return false;
 
     const entity = entities.find(e => e.name === entityName);
     if (!entity) return false;
@@ -86,13 +93,13 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
   };
 
   const handleCellChange = (id: string, field: keyof RiskControl, value: string | number) => {
-    const risk = risks.find(r => r.id === id);
+    const risk = localRisks.find(r => r.id === id);
     if (risk && !canEditRisk(risk)) {
       alert("No tienes permisos para editar esta entidad.");
       return;
     }
 
-    const updated = risks.map(risk => {
+    const updated = localRisks.map(risk => {
       if (risk.id !== id) return risk;
       const newRisk = { ...risk, [field]: value };
 
@@ -118,11 +125,12 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
 
       return newRisk;
     });
-    onUpdate(updated);
+    setLocalRisks(updated);
+    setHasChanges(true);
   };
 
   const handleAreaChange = (id: string, value: string) => {
-    const risk = risks.find(r => r.id === id);
+    const risk = localRisks.find(r => r.id === id);
     if (risk && !canEditRisk(risk)) return;
 
     if (value === '__add__') {
@@ -167,13 +175,20 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
       implementation_date: new Date().toISOString().split('T')[0],
       recommendation: ''
     };
-    onUpdate([...risks, newRisk]);
+    setLocalRisks([...localRisks, newRisk]);
+    setHasChanges(true);
   };
 
   const removeRow = (id: string) => {
-    const risk = risks.find(r => r.id === id);
+    const risk = localRisks.find(r => r.id === id);
     if (risk && !canEditRisk(risk)) return;
-    onUpdate(risks.filter(r => r.id !== id));
+    setLocalRisks(localRisks.filter(r => r.id !== id));
+    setHasChanges(true);
+  };
+
+  const handleSave = () => {
+    onUpdate(localRisks);
+    setHasChanges(false);
   };
 
   const getTasksForScope = (scope: string) => {
@@ -198,15 +213,26 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
           </div>
           <p className="text-xs text-slate-400 font-medium uppercase tracking-widest mt-1 italic tracking-tight">Cálculo Residual: Inherente / Efectividad | Clasificación: 1-7 Bajo, 8-14 Medio, 15-25 Alto</p>
         </div>
-        {(filterEntityName && canEditRisk(filterEntityName)) && (
-          <button
-            onClick={addRow}
-            className="flex items-center gap-2 px-4 py-2 bg-[#1a5f7a] text-white rounded-xl text-xs font-bold hover:brightness-110 transition-all shadow-lg shadow-slate-200"
-          >
-            <span className="material-icons-outlined text-sm">add</span>
-            Nueva Línea de Riesgo
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {hasChanges && (
+            <button
+              onClick={handleSave}
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100 animate-pulse"
+            >
+              <span className="material-icons-outlined text-sm">save</span>
+              Guardar Cambios
+            </button>
+          )}
+          {(filterEntityName && canEditRisk(filterEntityName)) && (
+            <button
+              onClick={addRow}
+              className="flex items-center gap-2 px-4 py-2 bg-[#1a5f7a] text-white rounded-xl text-xs font-bold hover:brightness-110 transition-all shadow-lg shadow-slate-200"
+            >
+              <span className="material-icons-outlined text-sm">add</span>
+              Nueva Línea de Riesgo
+            </button>
+          )}
+        </div>
       </div>
 
       {filterEntityName && (
@@ -454,7 +480,6 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                       {people.map(person => (
                         <option key={person.id} value={person.full_name}>{person.full_name}</option>
                       ))}
-                      {/* Permitir valores antiguos que no estén en la lista por compatibilidad */}
                       {risk.responsible && !people.some(p => p.full_name === risk.responsible) && (
                         <option value={risk.responsible}>{risk.responsible}</option>
                       )}

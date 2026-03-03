@@ -225,6 +225,78 @@ const ControlProApp: React.FC = () => {
     }
   };
 
+  const handleUpdateClaCriteria = async (newCriteria: CLACriterion[]) => {
+    setLoading(true);
+    try {
+      // Find deleted ones
+      const deletedIds = claCriteria
+        .filter(old => !newCriteria.find(nw => nw.id === old.id))
+        .map(old => old.id);
+
+      await Promise.all([
+        ...deletedIds.map(id => api.deleteCla(id)),
+        ...newCriteria.map(item => {
+          if (item.id.startsWith('CLA-')) {
+            // New item
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { id, entity_name, ...data } = item;
+            return api.createCla(data);
+          } else {
+            // Update item
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { id, entity_name, ...data } = item;
+            return api.updateCla(id, data);
+          }
+        })
+      ]);
+
+      const freshCla = await api.getClaCriteria();
+      setClaCriteria(freshCla);
+      toast.success('Criterios de CLA guardados correctamente');
+    } catch (error: any) {
+      console.error("Error saving CLA criteria:", error);
+      toast.error(`Error al guardar criterios de CLA: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateRisks = async (newRisks: RiskControl[]) => {
+    setLoading(true);
+    try {
+      // Find deleted ones
+      const deletedIds = risks
+        .filter(old => !newRisks.find(nw => nw.id === old.id))
+        .map(old => old.id);
+
+      await Promise.all([
+        ...deletedIds.map(id => api.deleteRisk(id)),
+        ...newRisks.map(item => {
+          if (item.id.startsWith('RC-')) {
+            // New item
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { id, entity_name, audit_scope, ...data } = item;
+            return api.createRisk(data);
+          } else {
+            // Update item
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { id, entity_name, audit_scope, ...data } = item;
+            return api.updateRisk(id, data);
+          }
+        })
+      ]);
+
+      const freshRisks = await api.getRisks();
+      setRisks(freshRisks);
+      toast.success('Matriz de riesgos guardada correctamente');
+    } catch (error: any) {
+      console.error("Error saving risks:", error);
+      toast.error(`Error al guardar matriz de riesgos: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleUpdatePhase = async (entityId: string, updatedPhase: Phase) => {
     // 1. Calculate new phases state locally to update UI immediately and determine what to save
     const currentEntity = entities.find(e => e.id === entityId);
@@ -449,7 +521,7 @@ const ControlProApp: React.FC = () => {
             <RiskMatrix
               entities={entities.filter(e => filteredEntities.some(fe => fe.id === e.id))} // Ensure dropdowns only show allowed entities
               risks={filteredRisks}
-              onUpdate={setRisks}
+              onUpdate={handleUpdateRisks}
               areas={areas}
               onAddArea={handleAddArea}
               plannerData={plannerData}
@@ -464,7 +536,7 @@ const ControlProApp: React.FC = () => {
               entities={entities.filter(e => filteredEntities.some(fe => fe.id === e.id))}
               areas={areas}
               onAddArea={handleAddArea}
-              onUpdate={setClaCriteria}
+              onUpdate={handleUpdateClaCriteria}
               filterEntityName={searchTerm !== '' ? searchTerm : null}
               onClearFilter={() => setSearchTerm('')}
             />

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { CLACriterion, AuditEntity } from '../types';
 
 interface CLACriteriaProps {
@@ -14,6 +14,14 @@ interface CLACriteriaProps {
 const COMPLIANCE_OPTIONS = ['Sí', 'No', 'N/A'] as const;
 
 const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, onAddArea, onUpdate, filterEntityName, onClearFilter }) => {
+  const [localCriteria, setLocalCriteria] = useState<CLACriterion[]>(criteria);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  useEffect(() => {
+    setLocalCriteria(criteria);
+    setHasChanges(false);
+  }, [criteria]);
+
   const handleCellChange = (id: string, field: keyof CLACriterion, value: string) => {
     let extraUpdates = {};
     if (field === 'entity_name') {
@@ -23,10 +31,11 @@ const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, on
       }
     }
 
-    const updated = criteria.map(item =>
+    const updated = localCriteria.map(item =>
       item.id === id ? { ...item, [field]: value, ...extraUpdates } : item
     );
-    onUpdate(updated);
+    setLocalCriteria(updated);
+    setHasChanges(true);
   };
 
   const handleAreaChange = (id: string, value: string) => {
@@ -56,11 +65,18 @@ const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, on
       source: '',
       complies: 'N/A'
     };
-    onUpdate([...criteria, newRow]);
+    setLocalCriteria([...localCriteria, newRow]);
+    setHasChanges(true);
   };
 
   const removeRow = (id: string) => {
-    onUpdate(criteria.filter(c => c.id !== id));
+    setLocalCriteria(localCriteria.filter(c => c.id !== id));
+    setHasChanges(true);
+  };
+
+  const handleSave = () => {
+    onUpdate(localCriteria);
+    setHasChanges(false);
   };
 
   return (
@@ -80,13 +96,24 @@ const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, on
           </div>
           <p className="text-xs text-slate-400 font-medium uppercase tracking-widest mt-1">Evaluación de Cumplimiento por Entidad y Área</p>
         </div>
-        <button
-          onClick={addRow}
-          className="flex items-center gap-2 px-4 py-2 bg-[#1a5f7a] text-white rounded-xl text-xs font-bold hover:brightness-110 transition-all shadow-lg shadow-slate-200"
-        >
-          <span className="material-icons-outlined text-sm">add</span>
-          Nuevo Criterio
-        </button>
+        <div className="flex items-center gap-3">
+          {hasChanges && (
+            <button
+              onClick={handleSave}
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100 animate-pulse"
+            >
+              <span className="material-icons-outlined text-sm">save</span>
+              Guardar Cambios
+            </button>
+          )}
+          <button
+            onClick={addRow}
+            className="flex items-center gap-2 px-4 py-2 bg-[#1a5f7a] text-white rounded-xl text-xs font-bold hover:brightness-110 transition-all shadow-lg shadow-slate-200"
+          >
+            <span className="material-icons-outlined text-sm">add</span>
+            Nuevo Criterio
+          </button>
+        </div>
       </div>
 
       <div className="overflow-x-auto">
@@ -103,7 +130,7 @@ const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, on
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {criteria.map((item) => (
+            {localCriteria.map((item) => (
               <tr key={item.id} className="group hover:bg-slate-50 transition-colors">
                 <td className="p-0 border-r border-slate-100">
                   <select
@@ -197,7 +224,7 @@ const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, on
                 </td>
               </tr>
             ))}
-            {criteria.length === 0 && (
+            {localCriteria.length === 0 && (
               <tr>
                 <td colSpan={7} className="p-20 text-center text-slate-400 italic">
                   {filterEntityName

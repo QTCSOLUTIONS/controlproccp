@@ -317,6 +317,24 @@ export const api = {
         return data as CLACriterion;
     },
 
+    createCla: async (cla: Omit<CLACriterion, 'id' | 'entity_name'>) => {
+        const { data, error } = await supabase.from('cla_criteria').insert(cla).select().single();
+        if (error) throw error;
+        return data as CLACriterion;
+    },
+
+    deleteCla: async (id: string) => {
+        const { error } = await supabase.from('cla_criteria').delete().eq('id', id);
+        if (error) throw error;
+        return true;
+    },
+
+    deleteRisk: async (id: string) => {
+        const { error } = await supabase.from('risk_controls').delete().eq('id', id);
+        if (error) throw error;
+        return true;
+    },
+
     // Areas
     getAreas: async () => {
         const { data, error } = await supabase.from('areas').select('*');
