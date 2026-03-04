@@ -210,6 +210,16 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                 </button>
               </div>
             )}
+            {/* New button to create a new Risk‑Control matrix entry */}
+            {canEditRisk(filterEntityName ?? entities[0]?.name) && (
+              <button
+                onClick={addRow}
+                className="flex items-center gap-2 px-4 py-2 bg-[#1a5f7a] text-white rounded-xl text-xs font-bold hover:brightness-110 transition-all shadow-lg shadow-slate-200"
+              >
+                <span className="material-icons-outlined text-sm">add</span>
+                Crear Matriz R‑C
+              </button>
+            )}
           </div>
           <p className="text-xs text-slate-400 font-medium uppercase tracking-widest mt-1 italic tracking-tight">Cálculo Residual: Inherente / Efectividad | Clasificación: 1-7 Bajo, 8-14 Medio, 15-25 Alto</p>
         </div>
