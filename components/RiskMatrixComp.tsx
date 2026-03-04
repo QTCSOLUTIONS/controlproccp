@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { RiskControl, AuditEntity, TaskPlannerEntry, Person } from '../types';
 import { SCOPE_OPTIONS } from '../constants';
 import { useAuth } from '../contexts/AuthContext';
 import { canEditEntity } from '../src/lib/permissions';
+import RiskEditModal from './RiskEditModal';
 
 interface RiskMatrixProps {
   risks: RiskControl[];
@@ -47,14 +48,60 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
   const [localRisks, setLocalRisks] = useState<RiskControl[]>(risks);
   const [hasChanges, setHasChanges] = useState(false);
 
+  const handleSaveRisk = (updatedRisk: RiskControl) => {
+    let newRisks: RiskControl[];
+    const exists = localRisks.some(r => r.id === updatedRisk.id);
+
+    if (exists) {
+      newRisks = localRisks.map(r => r.id === updatedRisk.id ? updatedRisk : r);
+    } else {
+      newRisks = [...localRisks, updatedRisk];
+    }
+
+    setLocalRisks(newRisks);
+    setHasChanges(true);
+    // Persist immediately as it is a modal save
+    onUpdate(newRisks);
+    setIsModalOpen(false);
+  };
+
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingRisk, setEditingRisk] = useState<RiskControl | undefined>(undefined);
+
+  // Filter State
+  const [filters, setFilters] = useState({
+    entity_name: '',
+    audit_scope: '',
+    tasks: '',
+    area: '',
+    responsible: '',
+    status: '',
+    traffic_light_level: ''
+  });
+
   useEffect(() => {
     setLocalRisks(risks);
     setHasChanges(false);
   }, [risks]);
 
-  const filteredRisks = filterEntityName
-    ? localRisks.filter(r => r.entity_name === filterEntityName)
-    : localRisks;
+  const filteredRisks = useMemo(() => {
+    let result = localRisks;
+
+    if (filterEntityName) {
+      result = result.filter(r => r.entity_name === filterEntityName);
+    }
+
+    if (filters.entity_name) result = result.filter(r => r.entity_name.toLowerCase().includes(filters.entity_name.toLowerCase()));
+    if (filters.audit_scope) result = result.filter(r => r.audit_scope?.toLowerCase().includes(filters.audit_scope.toLowerCase()));
+    if (filters.tasks) result = result.filter(r => r.tasks?.toLowerCase().includes(filters.tasks.toLowerCase()));
+    if (filters.area) result = result.filter(r => r.area?.toLowerCase().includes(filters.area.toLowerCase()));
+    if (filters.responsible) result = result.filter(r => r.responsible?.toLowerCase().includes(filters.responsible.toLowerCase()));
+    if (filters.status) result = result.filter(r => r.status === filters.status);
+    if (filters.traffic_light_level) result = result.filter(r => r.traffic_light_level === filters.traffic_light_level);
+
+    return result;
+  }, [localRisks, filterEntityName, filters]);
 
   const canEditRisk = (riskOrEntityName: RiskControl | string | undefined) => {
     let entityName = '';
@@ -233,11 +280,14 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
           )}
           {(filterEntityName && canEditRisk(filterEntityName)) && (
             <button
-              onClick={addRow}
+              onClick={() => {
+                setEditingRisk(undefined);
+                setIsModalOpen(true);
+              }}
               className="flex items-center gap-2 px-4 py-2 bg-[#1a5f7a] text-white rounded-xl text-xs font-bold hover:brightness-110 transition-all shadow-lg shadow-slate-200"
             >
-              <span className="material-icons-outlined text-sm">add</span>
-              Nueva Línea de Riesgo
+              <span className="material-icons-outlined text-sm">add_circle</span>
+              Nuevo Riesgo (Formulario)
             </button>
           )}
         </div>
@@ -264,9 +314,11 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[2800px]">
           <thead>
+            {/* Headers Label Row */}
             <tr className="bg-[#1a5f7a] text-white shadow-lg sticky top-0 z-30">
-              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[220px] sticky left-0 z-40 bg-[#1a5f7a] shadow-[4px_0_10px_-2px_rgba(0,0,0,0.1)]">Entidad</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[250px] sticky left-[220px] z-40 bg-[#1a5f7a] shadow-[4px_0_10px_-2px_rgba(0,0,0,0.1)]">Alcance de Auditoría</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap w-16 sticky left-0 z-40 bg-[#1a5f7a]">#</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[220px] sticky left-16 z-40 bg-[#1a5f7a]">Entidad</th>
+              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[250px] sticky left-[284px] z-40 bg-[#1a5f7a]">Alcance de Auditoría</th>
               <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[350px]">Tareas</th>
               <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap">Proceso</th>
               <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[180px]">Área</th>
@@ -282,7 +334,96 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
               <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap">Responsable</th>
               <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap">Implementación</th>
               <th className="p-4 text-xs font-bold uppercase tracking-wide whitespace-nowrap">Recomendación</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wide w-12 text-center"></th>
+            </tr>
+            {/* Filter Row */}
+            <tr className="bg-slate-50 sticky top-[52px] z-20 shadow-sm">
+              <th className="p-2 border-r border-slate-200 sticky left-0 z-40 bg-slate-50"></th>
+              <th className="p-2 border-r border-slate-200 sticky left-16 z-40 bg-slate-50">
+                <input
+                  type="text"
+                  placeholder="Filtrar Entidad..."
+                  title="Filtrar por Entidad"
+                  className="w-full px-2 py-1.5 text-[10px] rounded border border-slate-200 outline-none focus:ring-1 focus:ring-[#1a5f7a]"
+                  value={filters.entity_name}
+                  onChange={(e) => setFilters({ ...filters, entity_name: e.target.value })}
+                />
+              </th>
+              <th className="p-2 border-r border-slate-200 sticky left-[284px] z-40 bg-slate-50">
+                <input
+                  type="text"
+                  placeholder="Filtrar Alcance..."
+                  title="Filtrar por Alcance"
+                  className="w-full px-2 py-1.5 text-[10px] rounded border border-slate-200 outline-none focus:ring-1 focus:ring-[#1a5f7a]"
+                  value={filters.audit_scope}
+                  onChange={(e) => setFilters({ ...filters, audit_scope: e.target.value })}
+                />
+              </th>
+              <th className="p-2 border-r border-slate-200">
+                <input
+                  type="text"
+                  placeholder="Filtrar Tarea..."
+                  title="Filtrar por Tarea"
+                  className="w-full px-2 py-1.5 text-[10px] rounded border border-slate-200 outline-none focus:ring-1 focus:ring-[#1a5f7a]"
+                  value={filters.tasks}
+                  onChange={(e) => setFilters({ ...filters, tasks: e.target.value })}
+                />
+              </th>
+              <th className="p-2 border-r border-slate-200"></th>
+              <th className="p-2 border-r border-slate-200">
+                <input
+                  type="text"
+                  placeholder="Filtrar Área..."
+                  title="Filtrar por Área"
+                  className="w-full px-2 py-1.5 text-[10px] rounded border border-slate-200 outline-none focus:ring-1 focus:ring-[#1a5f7a]"
+                  value={filters.area}
+                  onChange={(e) => setFilters({ ...filters, area: e.target.value })}
+                />
+              </th>
+              <th className="p-2 border-r border-slate-200"></th>
+              <th className="p-2 border-r border-slate-200"></th>
+              <th className="p-2 border-r border-slate-200"></th>
+              <th className="p-2 border-r border-slate-200"></th>
+              <th className="p-2 border-r border-slate-200"></th>
+              <th className="p-2 border-r border-slate-200"></th>
+              <th className="p-2 border-r border-slate-200">
+                <select
+                  title="Filtrar por Nivel de Riesgo"
+                  className="w-full px-2 py-1.5 text-[10px] rounded border border-slate-200 outline-none focus:ring-1 focus:ring-[#1a5f7a] bg-white"
+                  value={filters.traffic_light_level}
+                  onChange={(e) => setFilters({ ...filters, traffic_light_level: e.target.value })}
+                >
+                  <option value="">Nivel...</option>
+                  <option value="Alto">Alto</option>
+                  <option value="Medio">Medio</option>
+                  <option value="Bajo">Bajo</option>
+                </select>
+              </th>
+              <th className="p-2 border-r border-slate-200"></th>
+              <th className="p-2 border-r border-slate-200">
+                <select
+                  title="Filtrar por Estado"
+                  className="w-full px-2 py-1.5 text-[10px] rounded border border-slate-200 outline-none focus:ring-1 focus:ring-[#1a5f7a] bg-white"
+                  value={filters.status}
+                  onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                >
+                  <option value="">Estado...</option>
+                  <option value="Pendiente">Pendiente</option>
+                  <option value="En curso">En curso</option>
+                  <option value="Completado">Completado</option>
+                </select>
+              </th>
+              <th className="p-2 border-r border-slate-200">
+                <input
+                  type="text"
+                  placeholder="Responsable..."
+                  title="Filtrar por Responsable"
+                  className="w-full px-2 py-1.5 text-[10px] rounded border border-slate-200 outline-none focus:ring-1 focus:ring-[#1a5f7a]"
+                  value={filters.responsible}
+                  onChange={(e) => setFilters({ ...filters, responsible: e.target.value })}
+                />
+              </th>
+              <th className="p-2 border-r border-slate-200"></th>
+              <th className="p-2"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -290,11 +431,26 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
               const readOnly = !canEditRisk(risk);
               return (
                 <tr key={risk.id} className="group hover:bg-slate-50 transition-colors">
-                  <td className="p-0 border-r border-slate-100 sticky left-0 z-20 bg-white group-hover:bg-slate-50 transition-colors shadow-[4px_0_10px_-2px_rgba(0,0,0,0.05)]">
+                  {/* Action Column */}
+                  <td className="p-2 border-r border-slate-100 sticky left-0 z-20 bg-white group-hover:bg-slate-50 transition-colors flex items-center justify-center h-full min-h-[56px]">
+                    <button
+                      onClick={() => {
+                        setEditingRisk(risk);
+                        setIsModalOpen(true);
+                      }}
+                      className="p-2 text-slate-400 hover:text-[#1a5f7a] hover:bg-slate-100 rounded-lg transition-all"
+                      title="Editar Riesgo"
+                    >
+                      <span className="material-icons-outlined text-lg">edit_note</span>
+                    </button>
+                  </td>
+
+                  <td className="p-0 border-r border-slate-100 sticky left-16 z-20 bg-white group-hover:bg-slate-50 transition-colors shadow-[4px_0_10px_-2px_rgba(0,0,0,0.05)]">
                     <select
                       disabled={readOnly}
                       className="w-full h-full p-4 text-sm font-semibold text-slate-800 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer disabled:cursor-not-allowed disabled:text-slate-500"
                       value={risk.entity_name}
+                      title="Seleccionar entidad"
                       aria-label="Seleccionar entidad"
                       onChange={(e) => handleCellChange(risk.id, 'entity_name', e.target.value)}
                     >
@@ -307,11 +463,12 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                     </select>
                   </td>
 
-                  <td className="p-0 border-r border-slate-100 sticky left-[220px] z-20 bg-white group-hover:bg-slate-50 transition-colors shadow-[4px_0_10px_-2px_rgba(0,0,0,0.05)]">
+                  <td className="p-0 border-r border-slate-100 sticky left-[284px] z-20 bg-white group-hover:bg-slate-50 transition-colors shadow-[4px_0_10px_-2px_rgba(0,0,0,0.05)]">
                     <select
                       disabled={readOnly}
                       className={`w-full h-full p-4 text-sm bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer disabled:cursor-not-allowed ${!risk.audit_scope ? 'text-slate-400 italic' : 'text-slate-700 font-medium'}`}
                       value={risk.audit_scope}
+                      title="Seleccionar alcance"
                       aria-label="Seleccionar alcance"
                       onChange={(e) => handleCellChange(risk.id, 'audit_scope', e.target.value)}
                     >
@@ -327,6 +484,7 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                       disabled={readOnly}
                       className={`w-full h-full p-4 text-sm bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer disabled:cursor-not-allowed ${!risk.tasks ? 'text-slate-400 italic' : 'text-slate-700 italic font-medium'}`}
                       value={risk.tasks}
+                      title="Seleccionar tarea"
                       aria-label="Seleccionar tarea"
                       onChange={(e) => handleCellChange(risk.id, 'tasks', e.target.value)}
                     >
@@ -540,31 +698,19 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
         </table>
       </div>
 
-      <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <div className="flex items-center gap-4">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Escala de Riesgo:</span>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded bg-green-600"></span>
-              <span className="text-[9px] font-bold text-slate-500">1-7 BAJO</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded bg-orange-500"></span>
-              <span className="text-[9px] font-bold text-slate-500">8-14 MEDIO</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded bg-red-600"></span>
-              <span className="text-[9px] font-bold text-slate-500">15-25 ALTO</span>
-            </div>
-          </div>
-          <div className="h-4 w-px bg-slate-200"></div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-            <span className="material-icons-outlined text-xs">calculate</span>
-            Residual = Inherente / Efectividad
-          </p>
-        </div>
-        <p className="text-[10px] text-slate-300 font-bold tracking-tighter uppercase">AuditPro Control Engine v3.5</p>
-      </div>
+      {isModalOpen && (
+        <RiskEditModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleSaveRisk}
+          risk={editingRisk}
+          entities={entities}
+          allTasks={plannerData}
+          availableAreas={areas}
+          onAddArea={onAddArea}
+          people={people}
+        />
+      )}
     </div>
   );
 };

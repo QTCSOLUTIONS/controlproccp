@@ -108,21 +108,21 @@ const TaskPlanner: React.FC<TaskPlannerProps> = ({ data, onUpdate }) => {
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-100/50">
-              <th className="p-4 text-[10px] font-extrabold uppercase tracking-widest text-slate-500 border-b border-slate-200 w-1/4">Alcance de Auditoría</th>
-              <th className="p-4 text-[10px] font-extrabold uppercase tracking-widest text-slate-500 border-b border-slate-200 w-2/4">Tareas</th>
+            <tr className="bg-[#1a5f7a] text-white">
+              <th className="p-4 text-[10px] font-extrabold uppercase tracking-widest border-r border-white/10 w-1/4">Alcance de Auditoría</th>
+              <th className="p-4 text-[10px] font-extrabold uppercase tracking-widest border-r border-white/10 w-2/4">Tareas</th>
               <th
-                className="p-4 text-[10px] font-extrabold uppercase tracking-widest text-slate-500 border-b border-slate-200 w-1/4 cursor-pointer hover:bg-slate-200/50 transition-colors group/sort"
+                className="p-4 text-[10px] font-extrabold uppercase tracking-widest border-r border-white/10 w-1/4 cursor-pointer hover:bg-white/10 transition-colors group/sort"
                 onClick={toggleSort}
               >
                 <div className="flex items-center gap-1">
                   Fase
-                  <span className={`material-icons-outlined text-sm transition-all ${sortDirection ? 'text-blue-600 opacity-100' : 'text-slate-300 opacity-0 group-hover/sort:opacity-100'}`}>
+                  <span className={`material-icons-outlined text-sm transition-all ${sortDirection ? 'text-blue-300 opacity-100' : 'text-white/30 opacity-0 group-hover/sort:opacity-100'}`}>
                     {sortDirection === 'desc' ? 'arrow_downward' : 'arrow_upward'}
                   </span>
                 </div>
               </th>
-              <th className="p-4 text-[10px] font-extrabold uppercase tracking-widest text-slate-500 border-b border-slate-200 w-12"></th>
+              <th className="p-4 text-[10px] font-extrabold uppercase tracking-widest w-12"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">

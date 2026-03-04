@@ -280,21 +280,33 @@ const ControlProApp: React.FC = () => {
   const handleUpdateRisks = async (newRisks: RiskControl[]) => {
     setLoading(true);
     try {
-      // 1. Find deleted items
+      // 1. Identify items to delete
+      // We should only delete items that were ALREADY in the filtered view but are now missing
+      // If no filter is active, we can compare against all risks
+      const currentViewIds = searchTerm === ''
+        ? risks.map(r => r.id)
+        : risks.filter(risk =>
+          risk.entity_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          risk.risk_description?.toLowerCase().includes(searchTerm.toLowerCase())
+        ).map(r => r.id);
+
+      // 2. Identify new items (starting with RC-)
+      console.log(`[Risk Sync] Total risks: ${risks.length}, New risks: ${newRisks.length}`);
+      const createdItems = newRisks.filter(item => item.id.startsWith('RC-'));
       const deletedIds = risks
-        .filter(old => !newRisks.find(nw => nw.id === old.id))
+        .filter(old => !newRisks.find(item => item.id === old.id))
         .map(old => old.id);
 
-      // 2. Identify new and modified items
-      const createdItems = newRisks.filter(item => item.id.startsWith('RC-'));
       const updatedItems = newRisks.filter(item => {
         if (item.id.startsWith('RC-')) return false;
         const original = risks.find(old => old.id === item.id);
         if (!original) return false;
+
         // Compare relevant fields to detect changes
-        return (
+        const hasChanged = (
           original.entity_name !== item.entity_name ||
           original.audit_id !== item.audit_id ||
+          original.audit_scope !== item.audit_scope ||
           original.tasks !== item.tasks ||
           original.process !== item.process ||
           original.area !== item.area ||
@@ -308,21 +320,67 @@ const ControlProApp: React.FC = () => {
           original.implementation_date !== item.implementation_date ||
           original.recommendation !== item.recommendation
         );
+        return hasChanged;
       });
 
       console.log(`[Risk Sync] Submitting: ${createdItems.length} new, ${updatedItems.length} updated, ${deletedIds.length} deleted.`);
 
+      if (createdItems.length > 0) console.log('[Risk Sync] Creating:', createdItems);
+      if (updatedItems.length > 0) console.log('[Risk Sync] Updating:', updatedItems);
+      if (deletedIds.length > 0) console.log('[Risk Sync] Deleting IDs:', deletedIds);
+
       await Promise.all([
-        ...deletedIds.map(id => api.deleteRisk(id)),
-        ...createdItems.map(item => {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { id, entity_name, audit_scope, ...data } = item;
-          return api.createRisk(data);
+        ...deletedIds.map(async (id) => {
+          try {
+            await api.deleteRisk(id);
+          } catch (err) {
+            console.error(`[Risk Sync] Error deleting risk ${id}:`, err);
+            throw err;
+          }
         }),
-        ...updatedItems.map(item => {
+        ...createdItems.map(async (item) => {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { id, entity_name, audit_scope, ...data } = item;
-          return api.updateRisk(id, data);
+          const { id, entity_name, ...data } = item;
+          // Sanitize numeric fields for DB (integers)
+          const sanitizedData = {
+            ...data,
+            impact: Math.round(data.impact || 0),
+            probability: Math.round(data.probability || 0),
+            inherent_risk: Math.round(data.inherent_risk || 0),
+            control_effectiveness: Math.round(data.control_effectiveness || 0),
+            residual_risk: Math.round(data.residual_risk || 0)
+          };
+          console.log('[Risk Sync] Sending Create Payload:', sanitizedData);
+          try {
+            const result = await api.createRisk(sanitizedData);
+            console.log('[Risk Sync] Create Success:', result);
+            return result;
+          } catch (err) {
+            console.error('[Risk Sync] Create Error:', err);
+            throw err;
+          }
+        }),
+        ...updatedItems.map(async (item) => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { id, entity_name, ...data } = item;
+          // Sanitize numeric fields for DB (integers)
+          const sanitizedData = {
+            ...data,
+            impact: Math.round(data.impact || 0),
+            probability: Math.round(data.probability || 0),
+            inherent_risk: Math.round(data.inherent_risk || 0),
+            control_effectiveness: Math.round(data.control_effectiveness || 0),
+            residual_risk: Math.round(data.residual_risk || 0)
+          };
+          console.log(`[Risk Sync] Sending Update Payload for ${id}:`, sanitizedData);
+          try {
+            const result = await api.updateRisk(id, sanitizedData);
+            console.log(`[Risk Sync] Update Success for ${id}:`, result);
+            return result;
+          } catch (err) {
+            console.error(`[Risk Sync] Update Error for ${id}:`, err);
+            throw err;
+          }
         })
       ]);
 
@@ -330,8 +388,8 @@ const ControlProApp: React.FC = () => {
       setRisks(freshRisks);
       toast.success('Matriz de riesgos guardada correctamente');
     } catch (error: any) {
-      console.error("Error saving risks:", error);
-      toast.error(`Error al guardar matriz de riesgos: ${error.message}`);
+      console.error('[Risk Sync] Overall Sync Error:', error);
+      toast.error(`Error al guardar: ${error.message || 'Error desconocido'}`);
     } finally {
       setLoading(false);
     }
@@ -547,7 +605,13 @@ const ControlProApp: React.FC = () => {
         />
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-          {activeView === 'dashboard' && <Dashboard entities={filteredEntities} risks={filteredRisks} />}
+          {activeView === 'dashboard' && (
+            <Dashboard
+              entities={filteredEntities}
+              risks={filteredRisks}
+              claCriteria={claCriteria}
+            />
+          )}
           {activeView === 'schedule' && (
             <Schedule
               entities={filteredEntities}

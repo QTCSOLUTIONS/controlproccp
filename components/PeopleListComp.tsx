@@ -14,11 +14,11 @@ const PeopleList: React.FC<PeopleListProps> = ({ people, entities, onAddPersonCl
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-50/80 border-b border-slate-200">
-              <th className="p-6 text-xs font-extrabold uppercase tracking-widest text-slate-400">Miembro del Equipo</th>
-              <th className="p-6 text-xs font-extrabold uppercase tracking-widest text-slate-400">Correo Electrónico</th>
-              <th className="p-6 text-xs font-extrabold uppercase tracking-widest text-slate-400">Entidades Asignadas</th>
-              <th className="p-6 text-xs font-extrabold uppercase tracking-widest text-slate-400 w-24">Acciones</th>
+            <tr className="bg-[#1a5f7a] text-white">
+              <th className="p-6 text-xs font-extrabold uppercase tracking-widest border-r border-white/10">Miembro del Equipo</th>
+              <th className="p-6 text-xs font-extrabold uppercase tracking-widest border-r border-white/10">Correo Electrónico</th>
+              <th className="p-6 text-xs font-extrabold uppercase tracking-widest border-r border-white/10">Entidades Asignadas</th>
+              <th className="p-6 text-xs font-extrabold uppercase tracking-widest w-24">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">

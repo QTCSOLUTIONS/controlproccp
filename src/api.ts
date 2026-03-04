@@ -307,11 +307,11 @@ export const api = {
         return data?.map((r: any) => ({
             ...r,
             entity_name: r.audit?.name,
-            audit_scope: r.audit?.scope
+            audit_scope: r.audit_scope || r.audit?.scope
         })) as RiskControl[];
     },
 
-    createRisk: async (risk: Omit<RiskControl, 'id' | 'entity_name' | 'audit_scope'>) => {
+    createRisk: async (risk: Omit<RiskControl, 'id' | 'entity_name'>) => {
         const { data, error } = await supabase.from('risk_controls').insert(risk).select().single();
         if (error) throw error;
         return data as RiskControl;
