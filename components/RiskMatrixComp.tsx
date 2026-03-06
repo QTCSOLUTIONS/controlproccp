@@ -150,24 +150,24 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
       if (risk.id !== id) return risk;
       const newRisk = { ...risk, [field]: value };
 
-      if (field === 'impact' || field === 'probability') {
-        const impactVal = Number(newRisk.impact);
-        const probVal = Number(newRisk.probability);
+      if (field === 'impact' || field === 'probability' || field === 'control_effectiveness') {
+        const impactVal = Number(newRisk.impact) || 1;
+        const probVal = Number(newRisk.probability) || 1;
         newRisk.inherent_risk = impactVal * probVal;
 
-        if (newRisk.inherent_risk >= 15) {
+        const effectiveness = Number(newRisk.control_effectiveness) || 1;
+        const rawResidual = newRisk.inherent_risk / effectiveness;
+        newRisk.residual_risk = parseFloat(rawResidual.toFixed(2));
+
+        if (newRisk.residual_risk >= 20) {
+          newRisk.traffic_light_level = 'Crítico';
+        } else if (newRisk.residual_risk >= 12) {
           newRisk.traffic_light_level = 'Alto';
-        } else if (newRisk.inherent_risk >= 8) {
+        } else if (newRisk.residual_risk >= 6) {
           newRisk.traffic_light_level = 'Medio';
         } else {
           newRisk.traffic_light_level = 'Bajo';
         }
-      }
-
-      if (field === 'impact' || field === 'probability' || field === 'control_effectiveness') {
-        const effectiveness = Number(newRisk.control_effectiveness) || 1;
-        const rawResidual = newRisk.inherent_risk / effectiveness;
-        newRisk.residual_risk = parseFloat(rawResidual.toFixed(2));
       }
 
       return newRisk;
@@ -260,7 +260,7 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
             {/* New button to create a new Risk‑Control matrix entry */}
             <button
               onClick={addRow}
-              className="flex items-center gap-2 px-4 py-2 bg-[#1a5f7a] text-white rounded-xl text-xs font-bold hover:brightness-110 transition-all shadow-lg shadow-slate-200"
+              className="flex items-center gap-2 px-4 py-2 bg-[#0a192f] text-white rounded-xl text-xs font-bold hover:brightness-110 transition-all shadow-lg shadow-slate-200"
             >
               <span className="material-icons-outlined text-sm">add</span>
               Crear Matriz R‑C
@@ -284,7 +284,7 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                 setEditingRisk(undefined);
                 setIsModalOpen(true);
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-[#1a5f7a] text-white rounded-xl text-xs font-bold hover:brightness-110 transition-all shadow-lg shadow-slate-200"
+              className="flex items-center gap-2 px-4 py-2 bg-[#1a365d] text-white rounded-xl text-xs font-bold hover:brightness-110 transition-all shadow-lg shadow-slate-200"
             >
               <span className="material-icons-outlined text-sm">add_circle</span>
               Nuevo Riesgo (Formulario)
@@ -312,83 +312,83 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
       )}
 
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-[2800px]">
+        <table className="w-full text-left border-collapse min-w-[2800px] border border-slate-300">
           <thead>
             {/* Headers Label Row */}
-            <tr className="bg-[#1a5f7a] text-white shadow-lg sticky top-0 z-30">
-              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap w-16 sticky left-0 z-40 bg-[#1a5f7a]">#</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[220px] sticky left-16 z-40 bg-[#1a5f7a]">Entidad</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[250px] sticky left-[284px] z-40 bg-[#1a5f7a]">Alcance de Auditoría</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[350px]">Tareas</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap">Proceso</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[180px]">Área</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap">Riesgo Identificado</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[180px]">Impacto</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[180px]">Probabilidad</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap text-center">Riesgo Inherente (I x P)</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap">Controles existentes</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[180px]">Efectividad (1-5)</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap text-center">Riesgo Residual (RI / EF)</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap text-center">Clasificación / Semáforo</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[160px]">Estado</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap">Responsable</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap">Implementación</th>
-              <th className="p-4 text-xs font-bold uppercase tracking-wide whitespace-nowrap">Recomendación</th>
+            <tr className="bg-[#0a192f] text-white shadow-lg sticky top-0 z-30 h-7">
+              <th className="px-1 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap w-12 sticky left-0 z-40 bg-[#0a192f] shadow-[1px_0_3px_rgba(0,0,0,0.4)]">#</th>
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap min-w-[200px] sticky left-12 z-40 bg-[#0a192f] shadow-[1px_0_3px_rgba(0,0,0,0.4)]">Entidad</th>
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap min-w-[220px] sticky left-[248px] z-40 bg-[#0a192f] shadow-[1px_0_3px_rgba(0,0,0,0.4)]">Alcance de Auditoría</th>
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap min-w-[300px]">Tareas</th>
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap">Proceso</th>
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap min-w-[150px]">Área</th>
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap">Riesgo Identificado</th>
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap min-w-[100px]">Impacto</th>
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap min-w-[100px]">Probabilidad</th>
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap text-center">Inherente</th>
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap">Controles</th>
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap min-w-[100px]">Efectividad</th>
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap text-center">Residual</th>
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap text-center">Nivel</th>
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap min-w-[120px]">Estado</th>
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap">Responsable</th>
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap">Fecha Imp.</th>
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap">Rec.</th>
             </tr>
             {/* Filter Row */}
-            <tr className="bg-slate-50 sticky top-[52px] z-20 shadow-sm">
-              <th className="p-2 border-r border-slate-200 sticky left-0 z-40 bg-slate-50"></th>
-              <th className="p-2 border-r border-slate-200 sticky left-16 z-40 bg-slate-50">
+            <tr className="bg-slate-100 sticky top-7 z-20 shadow-sm h-6">
+              <th className="p-0.5 border border-slate-300 sticky left-0 z-40 bg-slate-100 shadow-[1px_0_3px_rgba(0,0,0,0.1)]"></th>
+              <th className="p-0.5 border border-slate-300 sticky left-12 z-40 bg-slate-100 shadow-[1px_0_3px_rgba(0,0,0,0.1)]">
                 <input
                   type="text"
                   placeholder="Filtrar Entidad..."
                   title="Filtrar por Entidad"
-                  className="w-full px-2 py-1.5 text-[10px] rounded border border-slate-200 outline-none focus:ring-1 focus:ring-[#1a5f7a]"
+                  className="w-full px-1 py-0.5 text-[9px] rounded border border-slate-300 outline-none focus:ring-1 focus:ring-blue-500 bg-white"
                   value={filters.entity_name}
                   onChange={(e) => setFilters({ ...filters, entity_name: e.target.value })}
                 />
               </th>
-              <th className="p-2 border-r border-slate-200 sticky left-[284px] z-40 bg-slate-50">
+              <th className="p-0.5 border border-slate-300 sticky left-[248px] z-40 bg-slate-100 shadow-[1px_0_3px_rgba(0,0,0,0.1)]">
                 <input
                   type="text"
                   placeholder="Filtrar Alcance..."
                   title="Filtrar por Alcance"
-                  className="w-full px-2 py-1.5 text-[10px] rounded border border-slate-200 outline-none focus:ring-1 focus:ring-[#1a5f7a]"
+                  className="w-full px-1 py-0.5 text-[9px] rounded border border-slate-300 outline-none focus:ring-1 focus:ring-blue-500 bg-white"
                   value={filters.audit_scope}
                   onChange={(e) => setFilters({ ...filters, audit_scope: e.target.value })}
                 />
               </th>
-              <th className="p-2 border-r border-slate-200">
+              <th className="p-1 border border-slate-300">
                 <input
                   type="text"
                   placeholder="Filtrar Tarea..."
                   title="Filtrar por Tarea"
-                  className="w-full px-2 py-1.5 text-[10px] rounded border border-slate-200 outline-none focus:ring-1 focus:ring-[#1a5f7a]"
+                  className="w-full px-2 py-1 text-[10px] rounded border border-slate-200 outline-none focus:ring-1 focus:ring-[#0a192f]"
                   value={filters.tasks}
                   onChange={(e) => setFilters({ ...filters, tasks: e.target.value })}
                 />
               </th>
-              <th className="p-2 border-r border-slate-200"></th>
-              <th className="p-2 border-r border-slate-200">
+              <th className="p-1 border border-slate-300"></th>
+              <th className="p-1 border border-slate-300">
                 <input
                   type="text"
                   placeholder="Filtrar Área..."
                   title="Filtrar por Área"
-                  className="w-full px-2 py-1.5 text-[10px] rounded border border-slate-200 outline-none focus:ring-1 focus:ring-[#1a5f7a]"
+                  className="w-full px-2 py-1 text-[10px] rounded border border-slate-200 outline-none focus:ring-1 focus:ring-[#0a192f]"
                   value={filters.area}
                   onChange={(e) => setFilters({ ...filters, area: e.target.value })}
                 />
               </th>
-              <th className="p-2 border-r border-slate-200"></th>
-              <th className="p-2 border-r border-slate-200"></th>
-              <th className="p-2 border-r border-slate-200"></th>
-              <th className="p-2 border-r border-slate-200"></th>
-              <th className="p-2 border-r border-slate-200"></th>
-              <th className="p-2 border-r border-slate-200"></th>
-              <th className="p-2 border-r border-slate-200">
+              <th className="p-1 border border-slate-300"></th>
+              <th className="p-1 border border-slate-300"></th>
+              <th className="p-1 border border-slate-300"></th>
+              <th className="p-1 border border-slate-300"></th>
+              <th className="p-1 border border-slate-300"></th>
+              <th className="p-1 border border-slate-300"></th>
+              <th className="p-1 border border-slate-300">
                 <select
                   title="Filtrar por Nivel de Riesgo"
-                  className="w-full px-2 py-1.5 text-[10px] rounded border border-slate-200 outline-none focus:ring-1 focus:ring-[#1a5f7a] bg-white"
+                  className="w-full px-2 py-1 text-[10px] rounded border border-slate-200 outline-none focus:ring-1 focus:ring-[#0a192f] bg-white"
                   value={filters.traffic_light_level}
                   onChange={(e) => setFilters({ ...filters, traffic_light_level: e.target.value })}
                 >
@@ -398,11 +398,11 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                   <option value="Bajo">Bajo</option>
                 </select>
               </th>
-              <th className="p-2 border-r border-slate-200"></th>
-              <th className="p-2 border-r border-slate-200">
+              <th className="p-1 border border-slate-300"></th>
+              <th className="p-1 border border-slate-300">
                 <select
                   title="Filtrar por Estado"
-                  className="w-full px-2 py-1.5 text-[10px] rounded border border-slate-200 outline-none focus:ring-1 focus:ring-[#1a5f7a] bg-white"
+                  className="w-full px-2 py-1 text-[10px] rounded border border-slate-200 outline-none focus:ring-1 focus:ring-[#0a192f] bg-white"
                   value={filters.status}
                   onChange={(e) => setFilters({ ...filters, status: e.target.value })}
                 >
@@ -412,43 +412,45 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                   <option value="Completado">Completado</option>
                 </select>
               </th>
-              <th className="p-2 border-r border-slate-200">
+              <th className="p-1 border border-slate-300">
                 <input
                   type="text"
                   placeholder="Responsable..."
                   title="Filtrar por Responsable"
-                  className="w-full px-2 py-1.5 text-[10px] rounded border border-slate-200 outline-none focus:ring-1 focus:ring-[#1a5f7a]"
+                  className="w-full px-2 py-1 text-[10px] rounded border border-slate-200 outline-none focus:ring-1 focus:ring-[#0a192f]"
                   value={filters.responsible}
                   onChange={(e) => setFilters({ ...filters, responsible: e.target.value })}
                 />
               </th>
-              <th className="p-2 border-r border-slate-200"></th>
-              <th className="p-2"></th>
+              <th className="p-1 border border-slate-300"></th>
+              <th className="p-1 border border-slate-300"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-slate-200 bg-white">
             {filteredRisks.map((risk) => {
               const readOnly = !canEditRisk(risk);
               return (
-                <tr key={risk.id} className="group hover:bg-slate-50 transition-colors">
+                <tr key={risk.id} className="group hover:bg-blue-50/50 transition-colors even:bg-slate-50 odd:bg-white text-[9px] h-8">
                   {/* Action Column */}
-                  <td className="p-2 border-r border-slate-100 sticky left-0 z-20 bg-white group-hover:bg-slate-50 transition-colors flex items-center justify-center h-full min-h-[56px]">
-                    <button
-                      onClick={() => {
-                        setEditingRisk(risk);
-                        setIsModalOpen(true);
-                      }}
-                      className="p-2 text-slate-400 hover:text-[#1a5f7a] hover:bg-slate-100 rounded-lg transition-all"
-                      title="Editar Riesgo"
-                    >
-                      <span className="material-icons-outlined text-lg">edit_note</span>
-                    </button>
+                  <td className="p-0 border border-slate-300 sticky left-0 z-20 bg-inherit group-hover:bg-blue-50/50 transition-colors shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                    <div className="flex items-center justify-center h-full min-h-[32px]">
+                      <button
+                        onClick={() => {
+                          setEditingRisk(risk);
+                          setIsModalOpen(true);
+                        }}
+                        className="p-0.5 text-slate-400 hover:text-blue-600 hover:bg-white rounded transition-all"
+                        title="Editar Riesgo"
+                      >
+                        <span className="material-icons-outlined text-sm">edit_note</span>
+                      </button>
+                    </div>
                   </td>
 
-                  <td className="p-0 border-r border-slate-100 sticky left-16 z-20 bg-white group-hover:bg-slate-50 transition-colors shadow-[4px_0_10px_-2px_rgba(0,0,0,0.05)]">
+                  <td className="p-0 border border-slate-300 sticky left-12 z-20 bg-inherit group-hover:bg-blue-50/50 transition-colors shadow-[1px_0_3px_rgba(0,0,0,0.1)]">
                     <select
                       disabled={readOnly}
-                      className="w-full h-full p-4 text-sm font-semibold text-slate-800 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer disabled:cursor-not-allowed disabled:text-slate-500"
+                      className="w-full h-full px-1 py-0.5 border-none focus:ring-1 focus:ring-blue-500 focus:bg-white outline-none cursor-pointer disabled:cursor-not-allowed disabled:text-slate-500 bg-transparent text-[9px]"
                       value={risk.entity_name}
                       title="Seleccionar entidad"
                       aria-label="Seleccionar entidad"
@@ -463,10 +465,10 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                     </select>
                   </td>
 
-                  <td className="p-0 border-r border-slate-100 sticky left-[284px] z-20 bg-white group-hover:bg-slate-50 transition-colors shadow-[4px_0_10px_-2px_rgba(0,0,0,0.05)]">
+                  <td className="p-0 border border-slate-300 sticky left-[248px] z-20 bg-inherit group-hover:bg-blue-50/50 transition-colors shadow-[1px_0_3px_rgba(0,0,0,0.1)]">
                     <select
                       disabled={readOnly}
-                      className={`w-full h-full p-4 text-sm bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer disabled:cursor-not-allowed ${!risk.audit_scope ? 'text-slate-400 italic' : 'text-slate-700 font-medium'}`}
+                      className={`w-full h-full px-1 py-0.5 border-none focus:ring-1 focus:ring-blue-500 focus:bg-white outline-none cursor-pointer disabled:cursor-not-allowed bg-transparent text-[9px] ${!risk.audit_scope ? 'text-slate-400 italic' : 'text-slate-700 font-bold'}`}
                       value={risk.audit_scope}
                       title="Seleccionar alcance"
                       aria-label="Seleccionar alcance"
@@ -479,10 +481,10 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                     </select>
                   </td>
 
-                  <td className="p-0 border-r border-slate-100">
+                  <td className="p-0 border border-slate-300">
                     <select
                       disabled={readOnly}
-                      className={`w-full h-full p-4 text-sm bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer disabled:cursor-not-allowed ${!risk.tasks ? 'text-slate-400 italic' : 'text-slate-700 italic font-medium'}`}
+                      className={`w-full h-full px-1 py-0.5 border-none focus:ring-1 focus:ring-blue-500 focus:bg-white outline-none cursor-pointer disabled:cursor-not-allowed bg-transparent text-[9px] ${!risk.tasks ? 'text-slate-400 italic' : 'text-slate-700 italic font-bold'}`}
                       value={risk.tasks}
                       title="Seleccionar tarea"
                       aria-label="Seleccionar tarea"
@@ -495,21 +497,21 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                     </select>
                   </td>
 
-                  <td className="p-0 border-r border-slate-100">
+                  <td className="p-0 border border-slate-300">
                     <input
                       disabled={readOnly}
                       type="text"
-                      className="w-full h-full p-4 text-sm font-bold text-blue-800 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none placeholder:text-slate-300 disabled:cursor-not-allowed disabled:text-slate-500"
+                      className="w-full h-full px-1 py-0.5 font-black text-[#0a192f] border-none focus:ring-1 focus:ring-blue-500 focus:bg-white outline-none placeholder:text-slate-300 disabled:cursor-not-allowed disabled:text-slate-500 bg-transparent text-[9px]"
                       placeholder="Proceso..."
                       aria-label="Proceso"
                       value={risk.process}
                       onChange={(e) => handleCellChange(risk.id, 'process', e.target.value)}
                     />
                   </td>
-                  <td className="p-0 border-r border-slate-100">
+                  <td className="p-0 border border-slate-300">
                     <select
                       disabled={readOnly}
-                      className="w-full h-full p-4 text-sm text-slate-600 font-medium bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer disabled:cursor-not-allowed"
+                      className="w-full h-full px-1 py-0.5 text-slate-600 font-bold border-none focus:ring-1 focus:ring-blue-500 focus:bg-white outline-none cursor-pointer disabled:cursor-not-allowed bg-transparent text-[9px]"
                       value={risk.area}
                       aria-label="Seleccionar área"
                       onChange={(e) => handleAreaChange(risk.id, e.target.value)}
@@ -521,11 +523,11 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                       {!readOnly && <option value="__add__" className="text-blue-600 font-bold">+ Añadir nueva área...</option>}
                     </select>
                   </td>
-                  <td className="p-0 border-r border-slate-100 min-w-[300px]">
+                  <td className="p-0 border border-slate-300 min-w-[250px]">
                     <textarea
                       disabled={readOnly}
-                      rows={2}
-                      className="w-full h-full p-4 text-sm text-slate-700 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none resize-none leading-tight placeholder:text-slate-300 disabled:cursor-not-allowed disabled:text-slate-500"
+                      rows={1}
+                      className="w-full h-full px-1 py-0.5 text-slate-700 border-none focus:ring-1 focus:ring-blue-500 focus:bg-white outline-none resize-none leading-tight placeholder:text-slate-300 disabled:cursor-not-allowed disabled:text-slate-500 bg-transparent text-[9px]"
                       placeholder="Descripción del riesgo..."
                       aria-label="Descripción del riesgo"
                       value={risk.risk_description}
@@ -533,10 +535,10 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                     />
                   </td>
 
-                  <td className="p-0 border-r border-slate-100 bg-slate-50/20">
+                  <td className="p-0 border border-slate-300">
                     <select
                       disabled={readOnly}
-                      className="w-full h-full p-4 text-xs font-bold text-slate-700 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer disabled:cursor-not-allowed"
+                      className="w-full h-full px-1 py-0.5 font-bold text-slate-700 border-none focus:ring-1 focus:ring-blue-500 focus:bg-white outline-none cursor-pointer disabled:cursor-not-allowed bg-transparent text-[9px]"
                       value={risk.impact}
                       aria-label="Nivel de impacto"
                       onChange={(e) => handleCellChange(risk.id, 'impact', parseInt(e.target.value))}
@@ -547,15 +549,12 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                         </option>
                       ))}
                     </select>
-                    <div className="px-4 pb-2 -mt-2 text-[9px] text-slate-400 italic leading-none truncate max-w-[170px]">
-                      {IMPACT_LEVELS.find(l => l.value === risk.impact)?.description}
-                    </div>
                   </td>
 
-                  <td className="p-0 border-r border-slate-100 bg-slate-50/20">
+                  <td className="p-0 border border-slate-300">
                     <select
                       disabled={readOnly}
-                      className="w-full h-full p-4 text-xs font-bold text-slate-700 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer disabled:cursor-not-allowed"
+                      className="w-full h-full px-1 py-0.5 font-bold text-slate-700 border-none focus:ring-1 focus:ring-blue-500 focus:bg-white outline-none cursor-pointer disabled:cursor-not-allowed bg-transparent text-[9px]"
                       value={risk.probability}
                       aria-label="Nivel de probabilidad"
                       onChange={(e) => handleCellChange(risk.id, 'probability', parseInt(e.target.value))}
@@ -566,30 +565,27 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                         </option>
                       ))}
                     </select>
-                    <div className="px-4 pb-2 -mt-2 text-[9px] text-slate-400 italic leading-none truncate max-w-[170px]">
-                      {PROBABILITY_LEVELS.find(l => l.value === risk.probability)?.description}
-                    </div>
                   </td>
 
-                  <td className="p-4 text-sm text-center font-extrabold text-blue-900 bg-blue-50/40 border-r border-slate-100">
+                  <td className="p-1 px-2 text-center text-[10px] font-black text-[#0a192f] bg-blue-50/50 border border-slate-300 tabular-nums">
                     {risk.inherent_risk}
                   </td>
 
-                  <td className="p-4 text-sm text-slate-600 border-r border-slate-100">
+                  <td className="p-0 border border-slate-300">
                     <textarea
                       disabled={readOnly}
                       rows={1}
-                      className="w-full h-full p-0 text-sm bg-transparent border-none focus:ring-0 outline-none resize-none disabled:cursor-not-allowed disabled:text-slate-500"
+                      className="w-full h-full px-1 py-0.5 bg-transparent border-none focus:ring-1 focus:ring-blue-500 outline-none resize-none disabled:cursor-not-allowed disabled:text-slate-500 text-[9px] leading-tight"
                       value={risk.existing_controls}
                       aria-label="Controles existentes"
                       onChange={(e) => handleCellChange(risk.id, 'existing_controls', e.target.value)}
                     />
                   </td>
 
-                  <td className="p-0 border-r border-slate-100 bg-slate-50/20">
+                  <td className="p-0 border border-slate-300">
                     <select
                       disabled={readOnly}
-                      className="w-full h-full p-4 text-xs font-bold text-slate-700 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer disabled:cursor-not-allowed"
+                      className="w-full h-full px-1 py-0.5 font-bold text-slate-700 border-none focus:ring-1 focus:ring-blue-500 focus:bg-white outline-none cursor-pointer disabled:cursor-not-allowed bg-transparent text-[9px]"
                       value={risk.control_effectiveness}
                       aria-label="Efectividad del control"
                       onChange={(e) => handleCellChange(risk.id, 'control_effectiveness', parseInt(e.target.value) || 1)}
@@ -600,44 +596,39 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                         </option>
                       ))}
                     </select>
-                    <div className="px-4 pb-2 -mt-2 text-[9px] text-slate-400 italic leading-none truncate max-w-[170px]">
-                      {EFFECTIVENESS_LEVELS.find(l => l.value === risk.control_effectiveness)?.description}
-                    </div>
                   </td>
 
-                  <td className="p-4 text-sm text-center font-extrabold text-indigo-900 bg-indigo-50/30 border-r border-slate-100">
+                  <td className="p-1 px-2 text-center text-[10px] font-black text-[#0a192f] bg-indigo-50/30 border border-slate-300 tabular-nums">
                     {risk.residual_risk}
                   </td>
 
-                  <td className="p-4 text-center border-r border-slate-100">
-                    <div className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest inline-block min-w-[100px] ${getTrafficLightColor(risk.traffic_light_level)}`}>
+                  <td className="p-1 text-center border border-slate-300 bg-inherit">
+                    <div className={`px-1.5 py-0.5 rounded-sm text-[9px] font-black uppercase tracking-wider inline-block min-w-[70px] border ${getTrafficLightColor(risk.traffic_light_level)}`}>
                       {risk.traffic_light_level}
                     </div>
-                    <div className="text-[9px] text-slate-400 mt-1 font-bold">
-                      ({risk.inherent_risk})
+                    <div className="text-[8px] text-slate-400 mt-0.5 font-bold tabular-nums">
+                      ({risk.residual_risk})
                     </div>
                   </td>
 
-                  <td className="p-0 border-r border-slate-100 bg-slate-50/30">
-                    <div className="flex items-center h-full px-2">
-                      <select
-                        disabled={readOnly}
-                        className={`w-full py-2 px-3 text-[10px] font-bold uppercase tracking-wider rounded-lg border focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer shadow-sm transition-all disabled:cursor-not-allowed disabled:opacity-50 ${getStatusColor(risk.status)}`}
-                        value={risk.status}
-                        aria-label="Estado del riesgo"
-                        onChange={(e) => handleCellChange(risk.id, 'status', e.target.value)}
-                      >
-                        {STATUS_OPTIONS.map(opt => (
-                          <option key={opt} value={opt} className="bg-white text-slate-800 normal-case font-medium">{opt}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </td>
-
-                  <td className="p-0 border-r border-slate-100">
+                  <td className="p-0 border border-slate-300 bg-inherit group-hover:bg-blue-50/50 transition-colors">
                     <select
                       disabled={readOnly}
-                      className="w-full h-full p-4 text-sm text-slate-800 font-medium bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer disabled:cursor-not-allowed disabled:text-slate-500"
+                      className={`w-full h-full px-1 py-0.5 text-[9px] font-black uppercase tracking-wider bg-transparent border-none focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer disabled:cursor-not-allowed ${getStatusColor(risk.status)}`}
+                      value={risk.status}
+                      aria-label="Estado del riesgo"
+                      onChange={(e) => handleCellChange(risk.id, 'status', e.target.value)}
+                    >
+                      {STATUS_OPTIONS.map(opt => (
+                        <option key={opt} value={opt} className="bg-white text-slate-800 normal-case font-medium">{opt}</option>
+                      ))}
+                    </select>
+                  </td>
+
+                  <td className="p-0 border border-slate-300">
+                    <select
+                      disabled={readOnly}
+                      className="w-full h-full px-1 py-0.5 text-slate-800 font-bold bg-transparent border-none focus:ring-1 focus:ring-blue-500 focus:bg-white outline-none cursor-pointer disabled:cursor-not-allowed disabled:text-slate-500 text-[9px]"
                       value={risk.responsible}
                       aria-label="Responsable del riesgo"
                       onChange={(e) => handleCellChange(risk.id, 'responsible', e.target.value)}
@@ -651,21 +642,21 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                       )}
                     </select>
                   </td>
-                  <td className="p-0 border-r border-slate-100">
+                  <td className="p-0 border border-slate-300">
                     <input
                       disabled={readOnly}
                       type="date"
-                      className="w-full h-full p-4 text-[10px] text-slate-500 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none font-mono disabled:cursor-not-allowed"
+                      className="w-full h-full px-1 py-0.5 text-[9px] text-slate-500 bg-transparent border-none focus:ring-1 focus:ring-blue-500 focus:bg-white outline-none font-bold disabled:cursor-not-allowed"
                       value={risk.implementation_date}
                       aria-label="Fecha de implementación"
                       onChange={(e) => handleCellChange(risk.id, 'implementation_date', e.target.value)}
                     />
                   </td>
-                  <td className="p-0">
+                  <td className="p-0 border border-slate-300">
                     <textarea
                       disabled={readOnly}
                       rows={1}
-                      className="w-full h-full p-4 text-sm text-slate-600 italic leading-tight bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none resize-none placeholder:text-slate-300 disabled:cursor-not-allowed disabled:text-slate-500"
+                      className="w-full h-full px-1 py-0.5 text-slate-600 italic leading-tight bg-transparent border-none focus:ring-1 focus:ring-blue-500 focus:bg-white outline-none resize-none placeholder:text-slate-300 disabled:cursor-not-allowed disabled:text-slate-500 text-[9px]"
                       placeholder="Recomendación..."
                       aria-label="Recomendación"
                       value={risk.recommendation}
@@ -673,7 +664,7 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks, entities, plannerData, a
                     />
                   </td>
 
-                  <td className="p-4 text-center">
+                  <td className="p-1 text-center border border-slate-300">
                     {!readOnly && (
                       <button
                         onClick={() => removeRow(risk.id)}

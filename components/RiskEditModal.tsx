@@ -71,12 +71,13 @@ const RiskEditModal: React.FC<RiskEditModalProps> = ({
 
     // Recalculate risks
     useEffect(() => {
-        const impact = Number(formData.impact) || 0;
-        const prob = Number(formData.probability) || 0;
+        const impact = Number(formData.impact) || 1;
+        const prob = Number(formData.probability) || 1;
         const inherent = impact * prob;
 
-        const eff = Number(formData.control_effectiveness) || 0;
-        const residual = Math.max(0, inherent - eff);
+        const eff = Number(formData.control_effectiveness) || 1;
+        const rawResidual = inherent / eff;
+        const residual = parseFloat(rawResidual.toFixed(2));
 
         let level: RiskControl['traffic_light_level'] = 'Bajo';
         if (residual >= 20) level = 'Crítico';
@@ -112,15 +113,15 @@ const RiskEditModal: React.FC<RiskEditModalProps> = ({
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
             <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col max-h-[90vh]">
                 {/* Header */}
-                <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div className="p-6 border-b border-slate-700 flex items-center justify-between bg-[#0a192f] text-white">
                     <div>
-                        <h2 className="text-xl font-bold text-slate-800">
-                            {risk?.id ? 'Editar Riesgo' : 'Nuevo Riesgo en Matriz'}
+                        <h2 className="text-xl font-black tracking-tight">
+                            {risk?.id ? 'Editar Registro de Riesgo' : 'Nuevo Riesgo en Matriz'}
                         </h2>
-                        <p className="text-xs text-slate-500 font-medium">Gestión integral de riesgos y controles</p>
+                        <p className="text-[10px] text-blue-400 font-bold uppercase tracking-[0.2em] mt-0.5">Gestión integral de riesgos y controles</p>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
-                        <span className="material-icons-outlined text-slate-400">close</span>
+                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/70 hover:text-white">
+                        <span className="material-icons-outlined">close</span>
                     </button>
                 </div>
 
@@ -128,21 +129,21 @@ const RiskEditModal: React.FC<RiskEditModalProps> = ({
                 <div className="flex px-8 border-b border-slate-100 bg-white">
                     <button
                         onClick={() => setActiveTab('analysis')}
-                        className={`py-4 px-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${activeTab === 'analysis' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                        className={`py-4 px-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${activeTab === 'analysis' ? 'border-[#1a365d] text-[#1a365d]' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
                     >
                         <span className="material-icons-outlined text-sm">analytics</span>
                         Análisis de Riesgo
                     </button>
                     <button
                         onClick={() => setActiveTab('controls')}
-                        className={`py-4 px-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${activeTab === 'controls' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                        className={`py-4 px-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${activeTab === 'controls' ? 'border-[#1a365d] text-[#1a365d]' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
                     >
                         <span className="material-icons-outlined text-sm">security</span>
                         Controles
                     </button>
                     <button
                         onClick={() => setActiveTab('action')}
-                        className={`py-4 px-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${activeTab === 'action' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                        className={`py-4 px-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${activeTab === 'action' ? 'border-[#1a365d] text-[#1a365d]' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
                     >
                         <span className="material-icons-outlined text-sm">event_available</span>
                         Plan de Acción
@@ -186,7 +187,7 @@ const RiskEditModal: React.FC<RiskEditModalProps> = ({
                                         >
                                             <option value="">Área...</option>
                                             {(availableAreas || []).map(a => <option key={a} value={a}>{a}</option>)}
-                                            <option value="__add__" className="text-blue-600 font-bold">+ Nueva...</option>
+                                            <option value="__add__" className="text-[#1a365d] font-bold">+ Nueva...</option>
                                         </select>
                                         <input
                                             type="text"
@@ -230,7 +231,7 @@ const RiskEditModal: React.FC<RiskEditModalProps> = ({
                                         <span className="text-sm font-black text-slate-900">{formData.inherent_risk}</span>
                                     </div>
                                 </div>
-                                <div className="p-4 bg-blue-600 rounded-2xl shadow-lg flex flex-col justify-center items-center text-white relative overflow-hidden group">
+                                <div className="p-4 bg-[#1a365d] rounded-2xl shadow-lg flex flex-col justify-center items-center text-white relative overflow-hidden group">
                                     <div className="absolute top-0 right-0 p-8 bg-white/10 rounded-full translate-x-1/2 -translate-y-1/2 blur-2xl"></div>
                                     <span className="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-2">Resultado Final</span>
                                     <div className={`px-4 py-1 rounded-full text-[10px] font-black mb-1 border border-white/30 ${formData.traffic_light_level === 'Crítico' ? 'bg-red-500' :
@@ -267,7 +268,7 @@ const RiskEditModal: React.FC<RiskEditModalProps> = ({
                                         <div className="space-y-1">
                                             <div className="flex justify-between items-center mb-1">
                                                 <label className="text-[9px] font-bold text-slate-500">Valor de Mitigación (0-25)</label>
-                                                <span className="text-xs font-bold text-blue-600">{formData.control_effectiveness} pts</span>
+                                                <span className="text-xs font-bold text-[#1a365d]">{formData.control_effectiveness} pts</span>
                                             </div>
                                             <input
                                                 type="range"
@@ -277,7 +278,7 @@ const RiskEditModal: React.FC<RiskEditModalProps> = ({
                                                 max="25"
                                                 value={formData.control_effectiveness || 0}
                                                 onChange={handleChange}
-                                                className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                                                className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#1a365d]"
                                             />
                                             <p className="text-[9px] text-slate-400 italic mt-1">Representa cuánto reduce este control el riesgo inherente.</p>
                                         </div>
@@ -335,7 +336,7 @@ const RiskEditModal: React.FC<RiskEditModalProps> = ({
                                                 key={s}
                                                 type="button"
                                                 onClick={() => setFormData(p => ({ ...p, status: s as any }))}
-                                                className={`flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${formData.status === s ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400'}`}
+                                                className={`flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${formData.status === s ? 'bg-white shadow-sm text-[#1a365d]' : 'text-slate-400'}`}
                                             >
                                                 {s}
                                             </button>
@@ -359,7 +360,7 @@ const RiskEditModal: React.FC<RiskEditModalProps> = ({
                         </button>
                         <button
                             onClick={handleSave}
-                            className="px-8 py-2.5 text-sm font-bold bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-md shadow-blue-200 transition-all flex items-center gap-2"
+                            className="px-8 py-2.5 text-sm font-bold bg-[#1a365d] text-white rounded-xl hover:bg-[#0a192f] shadow-md shadow-[#1a365d]/30 transition-all flex items-center gap-2"
                         >
                             <span className="material-icons-outlined text-sm">save</span>
                             Guardar Riesgo

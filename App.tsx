@@ -291,11 +291,9 @@ const ControlProApp: React.FC = () => {
         ).map(r => r.id);
 
       // 2. Identify new items (starting with RC-)
-      console.log(`[Risk Sync] Total risks: ${risks.length}, New risks: ${newRisks.length}`);
       const createdItems = newRisks.filter(item => item.id.startsWith('RC-'));
-      const deletedIds = risks
-        .filter(old => !newRisks.find(item => item.id === old.id))
-        .map(old => old.id);
+      const deletedIds = currentViewIds
+        .filter(oldId => !newRisks.find(item => item.id === oldId));
 
       const updatedItems = newRisks.filter(item => {
         if (item.id.startsWith('RC-')) return false;
@@ -340,15 +338,15 @@ const ControlProApp: React.FC = () => {
         }),
         ...createdItems.map(async (item) => {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { id, entity_name, ...data } = item;
+          const { id, entity_name, audit, tasks, ...data } = item as any;
           // Sanitize numeric fields for DB (integers)
           const sanitizedData = {
             ...data,
-            impact: Math.round(data.impact || 0),
-            probability: Math.round(data.probability || 0),
-            inherent_risk: Math.round(data.inherent_risk || 0),
-            control_effectiveness: Math.round(data.control_effectiveness || 0),
-            residual_risk: Math.round(data.residual_risk || 0)
+            impact: Math.max(1, Math.round(Number(data.impact) || 1)),
+            probability: Math.max(1, Math.round(Number(data.probability) || 1)),
+            inherent_risk: Math.round(Number(data.inherent_risk) || 1),
+            control_effectiveness: Math.max(1, Math.round(Number(data.control_effectiveness) || 1)),
+            residual_risk: Number(data.residual_risk) || 0
           };
           console.log('[Risk Sync] Sending Create Payload:', sanitizedData);
           try {
@@ -362,15 +360,15 @@ const ControlProApp: React.FC = () => {
         }),
         ...updatedItems.map(async (item) => {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { id, entity_name, ...data } = item;
+          const { id, entity_name, audit, tasks, ...data } = item as any;
           // Sanitize numeric fields for DB (integers)
           const sanitizedData = {
             ...data,
-            impact: Math.round(data.impact || 0),
-            probability: Math.round(data.probability || 0),
-            inherent_risk: Math.round(data.inherent_risk || 0),
-            control_effectiveness: Math.round(data.control_effectiveness || 0),
-            residual_risk: Math.round(data.residual_risk || 0)
+            impact: Math.max(1, Math.round(Number(data.impact) || 1)),
+            probability: Math.max(1, Math.round(Number(data.probability) || 1)),
+            inherent_risk: Math.round(Number(data.inherent_risk) || 1),
+            control_effectiveness: Math.max(1, Math.round(Number(data.control_effectiveness) || 1)),
+            residual_risk: Number(data.residual_risk) || 0
           };
           console.log(`[Risk Sync] Sending Update Payload for ${id}:`, sanitizedData);
           try {

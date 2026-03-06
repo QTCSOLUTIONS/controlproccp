@@ -112,7 +112,7 @@ const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, on
           )}
           <button
             onClick={addRow}
-            className="flex items-center gap-2 px-4 py-2 bg-[#1a5f7a] text-white rounded-xl text-xs font-bold hover:brightness-110 transition-all shadow-lg shadow-slate-200"
+            className="flex items-center gap-2 px-3 py-1.5 bg-[#0a192f] text-white rounded-lg text-xs font-bold hover:bg-[#1a365d] transition-all shadow-md shadow-slate-200"
           >
             <span className="material-icons-outlined text-sm">add</span>
             Nuevo Criterio
@@ -123,22 +123,22 @@ const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, on
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-[1500px]">
           <thead>
-            <tr className="bg-[#1a5f7a] text-white">
-              <th className="p-4 text-sm font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[220px]">Entidad</th>
-              <th className="p-4 text-sm font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[180px]">Área</th>
-              <th className="p-4 text-sm font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[150px]">Criterio</th>
-              <th className="p-4 text-sm font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[400px]">Descripción de Criterio</th>
-              <th className="p-4 text-sm font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[250px]">Fuente/Referencia</th>
-              <th className="p-4 text-sm font-bold uppercase tracking-wide border-r border-white/10 whitespace-nowrap min-w-[140px] text-center">Cumple Si/No</th>
-              <th className="p-4 text-sm font-bold uppercase tracking-wide w-12 text-center"></th>
+            <tr className="bg-[#0a192f] text-white sticky top-0 z-30 h-7 shadow-lg">
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap min-w-[180px] sticky left-0 z-40 bg-[#0a192f] shadow-[1px_0_3px_rgba(0,0,0,0.4)]">Entidad</th>
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap min-w-[150px]">Área</th>
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap min-w-[120px]">Criterio</th>
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap min-w-[350px]">Descripción de Criterio</th>
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap min-w-[200px]">Fuente/Referencia</th>
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap min-w-[110px] text-center">Cumple</th>
+              <th className="px-2 text-[9px] font-black uppercase tracking-widest border border-slate-700 whitespace-nowrap w-8 text-center">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {filteredCriteria.map((item) => (
-              <tr key={item.id} className="group hover:bg-slate-50 transition-colors">
-                <td className="p-0 border-r border-slate-100">
+              <tr key={item.id} className="group hover:bg-blue-50/50 transition-colors even:bg-slate-50 odd:bg-white text-[9px] h-8">
+                <td className="p-0 border border-slate-300 sticky left-0 z-20 bg-inherit group-hover:bg-blue-50/50 transition-colors shadow-[1px_0_3px_rgba(0,0,0,0.1)]">
                   <select
-                    className="w-full h-full p-4 text-sm font-semibold text-slate-800 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
+                    className="w-full h-full px-1 py-0.5 text-[9px] font-black text-[#0a192f] bg-transparent border-none focus:ring-1 focus:ring-blue-500 focus:bg-white outline-none cursor-pointer"
                     value={item.entity_name}
                     aria-label="Seleccionar entidad"
                     onChange={(e) => handleCellChange(item.id, 'entity_name', e.target.value)}
@@ -152,9 +152,9 @@ const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, on
                   </select>
                 </td>
 
-                <td className="p-0 border-r border-slate-100">
+                <td className="p-0 border border-slate-300">
                   <select
-                    className="w-full h-full p-4 text-sm text-slate-700 font-medium bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer"
+                    className="w-full h-full px-1 py-0.5 text-[9px] text-slate-700 font-bold bg-transparent border-none focus:ring-1 focus:ring-blue-500 focus:bg-white outline-none cursor-pointer"
                     value={item.area}
                     aria-label="Seleccionar área"
                     onChange={(e) => handleAreaChange(item.id, e.target.value)}
@@ -167,10 +167,10 @@ const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, on
                   </select>
                 </td>
 
-                <td className="p-0 border-r border-slate-100">
+                <td className="p-0 border border-slate-300">
                   <input
                     type="text"
-                    className="w-full h-full p-4 text-sm font-bold text-blue-900 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none"
+                    className="w-full h-full px-1 py-0.5 text-[9px] font-black text-blue-900 bg-transparent border-none focus:ring-1 focus:ring-blue-500 focus:bg-white outline-none"
                     placeholder="Ref. Criterio..."
                     aria-label="Referencia del criterio"
                     value={item.criterion}
@@ -178,10 +178,10 @@ const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, on
                   />
                 </td>
 
-                <td className="p-0 border-r border-slate-100">
+                <td className="p-0 border border-slate-300">
                   <textarea
-                    rows={2}
-                    className="w-full h-full p-4 text-sm text-slate-600 bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none resize-none leading-relaxed"
+                    rows={1}
+                    className="w-full h-full px-1 py-0.5 text-[9px] text-slate-600 bg-transparent border-none focus:ring-1 focus:ring-blue-500 focus:bg-white outline-none resize-none leading-tight"
                     placeholder="Descripción detallada del criterio..."
                     aria-label="Descripción del criterio"
                     value={item.description}
@@ -189,10 +189,10 @@ const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, on
                   />
                 </td>
 
-                <td className="p-0 border-r border-slate-100">
+                <td className="p-0 border border-slate-300">
                   <input
                     type="text"
-                    className="w-full h-full p-4 text-sm text-slate-500 italic bg-transparent border-none focus:ring-2 focus:ring-blue-500/20 outline-none"
+                    className="w-full h-full px-1 py-0.5 text-[9px] text-slate-500 italic bg-transparent border-none focus:ring-1 focus:ring-blue-500 focus:bg-white outline-none"
                     placeholder="Referencia normativa..."
                     aria-label="Referencia normativa"
                     value={item.source}
@@ -200,11 +200,11 @@ const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, on
                   />
                 </td>
 
-                <td className="p-2 border-r border-slate-100 bg-slate-50/20 text-center">
+                <td className="p-0.5 border border-slate-300 bg-slate-50/20 text-center">
                   <select
-                    className={`w-full py-2 px-3 text-xs font-extrabold uppercase tracking-widest rounded-lg border focus:ring-2 focus:ring-blue-500/20 outline-none cursor-pointer shadow-sm transition-all ${item.complies === 'Sí' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                      item.complies === 'No' ? 'bg-red-50 text-red-700 border-red-200' :
-                        'bg-slate-100 text-slate-500 border-slate-200'
+                    className={`w-full h-full px-1 py-0.5 text-[9px] font-black uppercase tracking-widest bg-transparent border-none focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer transition-all ${item.complies === 'Sí' ? 'text-emerald-700' :
+                      item.complies === 'No' ? 'text-red-700' :
+                        'text-slate-500'
                       }`}
                     value={item.complies}
                     aria-label="Cumplimiento"
@@ -216,14 +216,14 @@ const CLACriteria: React.FC<CLACriteriaProps> = ({ criteria, entities, areas, on
                   </select>
                 </td>
 
-                <td className="p-4 text-center">
+                <td className="p-0 border border-slate-300 text-center">
                   <button
                     onClick={() => removeRow(item.id)}
-                    className="text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                    className="p-1 text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
                     title="Eliminar criterio"
                     aria-label="Eliminar criterio"
                   >
-                    <span className="material-icons-outlined text-sm">delete</span>
+                    <span className="material-icons-outlined text-xs">delete</span>
                   </button>
                 </td>
               </tr>
